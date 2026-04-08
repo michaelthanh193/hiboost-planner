@@ -1,25 +1,66 @@
-// POST /api/lead — save user contact info
-// GET  /api/lead — download Excel of all collected leads
+// POST /api/lead — save contact lead to Notion database
+// GET  /api/lead — health check / count
 
-const fs   = require('fs');
-const path = require('path');
-const XLSX = require('xlsx');
+const https = require('https');
 
-const LEADS_FILE = '/tmp/hiboost-leads.json';
+const NOTION_TOKEN       = process.env.NOTION_TOKEN;
+const NOTION_DATABASE_ID = process.env.NOTION_DATABASE_ID || '662679eb964c416e9565826be7c4ba99';
 
-function readLeads() {
-  try {
-    if (fs.existsSync(LEADS_FILE)) {
-      return JSON.parse(fs.readFileSync(LEADS_FILE, 'utf8'));
-    }
-  } catch {}
-  return [];
+// ── Minimal Notion API helper ──────────────────────────────────────────────────
+function notionRequest(method, path, body) {
+  return new Promise((resolve, reject) => {
+    const data = body ? JSON.stringify(body) : null;
+    const options = {
+      hostname: 'api.notion.com',
+      port: 443,
+      path,
+      method,
+      headers: {
+        'Authorization': `Bearer ${NOTION_TOKEN}`,
+        'Notion-Version': '2022-06-28',
+        'Content-Type': 'application/json',
+        ...(data ? { 'Content-Length': Buffer.byteLength(data) } : {}),
+      },
+    };
+
+    const req = https.request(options, (res) => {
+      let raw = '';
+      res.on('data', chunk => { raw += chunk; });
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode, body: JSON.parse(raw) }); }
+        catch { resolve({ status: res.statusCode, body: raw }); }
+      });
+    });
+
+    req.on('error', reject);
+    if (data) req.write(data);
+    req.end();
+  });
 }
 
-function writeLeads(leads) {
-  fs.writeFileSync(LEADS_FILE, JSON.stringify(leads, null, 2), 'utf8');
+// ── Map sport value → Notion select option ────────────────────────────────────
+function mapSport(sport) {
+  const map = {
+    running:   'Running',
+    cycling:   'Cycling',
+    triathlon: 'Triathlon',
+    swimming:  'Swimming',
+    other:     'Other',
+  };
+  return map[sport?.toLowerCase()] || 'Other';
 }
 
+// ── Format duration: 4.833... → "4h50min" ─────────────────────────────────────
+function fmtHrs(h) {
+  const num = parseFloat(h);
+  if (!num || num <= 0) return '';
+  const hrs  = Math.floor(num);
+  const mins = Math.round((num - hrs) * 60);
+  if (hrs === 0) return `${mins}min`;
+  return mins === 0 ? `${hrs}h` : `${hrs}h${mins}min`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -27,71 +68,64 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // ── POST: save a new lead ──────────────────────────────────────────────────
+  // ── GET: health check ──────────────────────────────────────────────────────
+  if (req.method === 'GET') {
+    const configured = !!NOTION_TOKEN;
+    return res.status(200).json({
+      ok: true,
+      notion: configured ? 'connected' : 'missing NOTION_TOKEN env var',
+      database: NOTION_DATABASE_ID,
+    });
+  }
+
+  // ── POST: save lead to Notion ──────────────────────────────────────────────
   if (req.method === 'POST') {
+    if (!NOTION_TOKEN) {
+      console.error('[lead] NOTION_TOKEN not set');
+      return res.status(500).json({ error: 'Notion not configured' });
+    }
+
     const { firstName, lastName, email, phone, sport, eventName, durationHrs } = req.body || {};
 
     if (!firstName || !lastName || !email) {
       return res.status(400).json({ error: 'firstName, lastName, email are required' });
     }
 
-    const lead = {
-      id:          Date.now(),
-      submittedAt: new Date().toISOString(),
-      firstName:   firstName?.trim(),
-      lastName:    lastName?.trim(),
-      fullName:    `${lastName?.trim()} ${firstName?.trim()}`,
-      email:       email?.trim(),
-      phone:       phone?.trim() || '',
-      sport:       sport || '',
-      eventName:   eventName || '',
-      durationHrs: durationHrs || '',
+    const fullName = `${lastName?.trim()} ${firstName?.trim()}`;
+
+    const page = {
+      parent: { database_id: NOTION_DATABASE_ID },
+      properties: {
+        'Họ và Tên': {
+          title: [{ text: { content: fullName } }],
+        },
+        'Email': {
+          email: email?.trim(),
+        },
+        'Số ĐT': {
+          phone_number: phone?.trim() || null,
+        },
+        'Môn': {
+          select: { name: mapSport(sport) },
+        },
+        'Sự Kiện': {
+          rich_text: [{ text: { content: eventName || '' } }],
+        },
+        'Thời Gian': {
+          rich_text: [{ text: { content: fmtHrs(durationHrs) } }],
+        },
+      },
     };
 
-    const leads = readLeads();
-    leads.push(lead);
-    writeLeads(leads);
+    const result = await notionRequest('POST', '/v1/pages', page);
 
-    console.log(`[lead] saved: ${lead.fullName} <${lead.email}>`);
-    return res.status(200).json({ success: true, id: lead.id });
-  }
-
-  // ── GET: download Excel of all leads ──────────────────────────────────────
-  if (req.method === 'GET') {
-    const leads = readLeads();
-
-    if (leads.length === 0) {
-      return res.status(200).json({ message: 'No leads yet', count: 0 });
+    if (result.status !== 200) {
+      console.error('[lead] Notion error:', JSON.stringify(result.body));
+      return res.status(500).json({ error: 'Failed to save to Notion', details: result.body?.message });
     }
 
-    // Build Excel
-    const rows = leads.map((l, i) => ({
-      'STT':            i + 1,
-      'Ngày':           new Date(l.submittedAt).toLocaleString('vi-VN'),
-      'Họ và Tên':      l.fullName,
-      'Email':          l.email,
-      'Số ĐT':          l.phone,
-      'Môn':            l.sport,
-      'Sự Kiện':        l.eventName,
-      'Thời Gian (h)':  l.durationHrs,
-    }));
-
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(rows);
-
-    // Column widths
-    ws['!cols'] = [
-      { wch: 5 }, { wch: 20 }, { wch: 24 }, { wch: 28 },
-      { wch: 14 }, { wch: 14 }, { wch: 20 }, { wch: 14 },
-    ];
-
-    XLSX.utils.book_append_sheet(wb, ws, 'Leads');
-    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
-
-    const date = new Date().toISOString().slice(0, 10);
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename="hiboost-leads-${date}.xlsx"`);
-    return res.status(200).send(buf);
+    console.log(`[lead] ✅ saved: ${fullName} <${email}>`);
+    return res.status(200).json({ success: true, notionPageId: result.body.id });
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
