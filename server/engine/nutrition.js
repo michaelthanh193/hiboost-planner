@@ -740,4 +740,4 @@ function generateTips({ carbsPerHr, sodiumPerHr, durationHrs, experience, temper
   return tips;
 }
 
-module.exports = { calculatePlan, SPORTS, HIBOOST_P
+module.exports = { calculatePlan, SPORTS, HIBOOST_PRODUCTS };
