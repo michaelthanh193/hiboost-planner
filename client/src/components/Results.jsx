@@ -1,5 +1,13 @@
 import { useState } from 'react';
 
+function fmtHrs(h) {
+  if (!h || h <= 0) return '—';
+  const hrs = Math.floor(h);
+  const mins = Math.round((h - hrs) * 60);
+  if (hrs === 0) return `${mins}min`;
+  return mins === 0 ? `${hrs}h` : `${hrs}h${mins}min`;
+}
+
 export default function Results({ plan, form, restart }) {
   const { perHour, totals, timeline, products, tips, sweatRatePerHr, meta, segmentBreakdown } = plan;
 
@@ -9,7 +17,11 @@ export default function Results({ plan, form, restart }) {
       <div style={styles.heroBanner}>
         <div style={styles.heroLeft}>
           <p style={styles.heroSubtitle}>Your personalized race plan</p>
-          <h1 style={styles.heroTitle}>{meta.sport} · {meta.durationHrs}h</h1>
+          <h1 style={styles.heroTitle}>
+            {capitalise(meta.sport)}
+            {form.eventName ? ` · ${form.eventName}` : ''}
+            {` · ${fmtHrs(meta.durationHrs)}`}
+          </h1>
           <p style={styles.heroDetail}>
             {meta.bodyWeightKg}kg · {meta.gender === 'female' ? '♀ Female' : '♂ Male'} · Age {meta.age} · {capitalise(meta.sweatLevel)} sweater · {capitalise(meta.temperature)} conditions
           </p>

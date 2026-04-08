@@ -2,7 +2,7 @@
   "version": 2,
   "buildCommand": "npm --prefix client install && npm --prefix client run build",
   "outputDirectory": "client/dist",
-  "installCommand": "npm --prefix server install --production",
+  "installCommand": "npm install && npm --prefix server install --production",
   "functions": {
     "api/plan.js": {
       "memory": 256,

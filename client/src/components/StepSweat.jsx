@@ -23,7 +23,7 @@ const TEMP_OPTIONS = [
   { id: 'very_hot', icon: '☀️🔥',  label: '> 30°C',   desc: 'Very hot' },
 ];
 
-export default function StepSweat({ form, update, back, submit, loading, error }) {
+export default function StepSweat({ form, update, back, next }) {
   const [useSweatTest, setUseSweatTest] = useState(
     !!(form.sweatRateMlHr || form.sweatSodiumMgL)
   );
@@ -155,12 +155,10 @@ export default function StepSweat({ form, update, back, submit, loading, error }
           </div>
         </Section>
 
-        {error && <div style={styles.errorBanner}>⚠️ {error}</div>}
-
         <div style={styles.navRow}>
-          <button style={styles.backBtn} onClick={back} disabled={loading}>← Back</button>
-          <button style={styles.submitBtn} onClick={submit} disabled={loading}>
-            {loading ? '⏳ Calculating...' : '🚀 Generate My Plan →'}
+          <button style={styles.backBtn} onClick={back}>← Back</button>
+          <button style={styles.submitBtn} onClick={next}>
+            Tiếp theo →
           </button>
         </div>
       </div>

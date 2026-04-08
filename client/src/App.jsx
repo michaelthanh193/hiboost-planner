@@ -4,10 +4,11 @@ import StepEvent from './components/StepEvent';
 import StepSplits from './components/StepSplits';
 import StepBody from './components/StepBody';
 import StepSweat from './components/StepSweat';
+import StepContact from './components/StepContact';
 import Results from './components/Results';
 
-const BASE_STEPS    = ['Sport', 'Event', 'Body', 'Sweat Profile', 'Your Plan'];
-const TRI_STEPS     = ['Sport', 'Event', 'Splits', 'Body', 'Sweat Profile', 'Your Plan'];
+const BASE_STEPS = ['Sport', 'Event', 'Body', 'Sweat Profile', 'Contact', 'Your Plan'];
+const TRI_STEPS  = ['Sport', 'Event', 'Splits', 'Body', 'Sweat Profile', 'Contact', 'Your Plan'];
 
 const initialForm = {
   sport: '',
@@ -24,6 +25,11 @@ const initialForm = {
   sweatRateMlHr: '',
   sweatSodiumMgL: '',
   splits: null,
+  // Contact
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
 };
 
 export default function App() {
@@ -45,6 +51,21 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
+      // Fire-and-forget: save lead contact info
+      fetch('/api/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName:   form.firstName,
+          lastName:    form.lastName,
+          email:       form.email,
+          phone:       form.phone,
+          sport:       form.sport,
+          eventName:   form.eventName,
+          durationHrs: form.durationHrs,
+        }),
+      }).catch(() => {});
+
       const res = await fetch('/api/plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -106,7 +127,12 @@ export default function App() {
 
         {/* Sweat step — index 3 (non-tri) or 4 (tri) */}
         {step === (isTri ? 4 : 3) && (
-          <StepSweat
+          <StepSweat form={form} update={update} back={back} next={next} />
+        )}
+
+        {/* Contact step — index 4 (non-tri) or 5 (tri) */}
+        {step === (isTri ? 5 : 4) && (
+          <StepContact
             form={form}
             update={update}
             back={back}
@@ -116,8 +142,8 @@ export default function App() {
           />
         )}
 
-        {/* Results — index 4 (non-tri) or 5 (tri) */}
-        {step === (isTri ? 5 : 4) && plan && <Results plan={plan} form={form} restart={restart} />}
+        {/* Results — index 5 (non-tri) or 6 (tri) */}
+        {step === (isTri ? 6 : 5) && plan && <Results plan={plan} form={form} restart={restart} />}
       </main>
 
       <footer style={styles.footer}>
