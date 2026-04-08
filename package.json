@@ -1,0 +1,17 @@
+{
+  "name": "hiboost-nutrition-planner",
+  "version": "1.0.0",
+  "description": "Athlete nutrition planner — Precision Hydration style, powered by HiBoost",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "build": "npm --prefix server install --production && npm --prefix client install && npm --prefix client run build",
+    "start": "node server/index.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

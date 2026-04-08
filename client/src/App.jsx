@@ -1,0 +1,194 @@
+import { useState } from 'react';
+import StepSport from './components/StepSport';
+import StepEvent from './components/StepEvent';
+import StepSplits from './components/StepSplits';
+import StepBody from './components/StepBody';
+import StepSweat from './components/StepSweat';
+import Results from './components/Results';
+
+const BASE_STEPS    = ['Sport', 'Event', 'Body', 'Sweat Profile', 'Your Plan'];
+const TRI_STEPS     = ['Sport', 'Event', 'Splits', 'Body', 'Sweat Profile', 'Your Plan'];
+
+const initialForm = {
+  sport: '',
+  eventName: '',
+  durationHrs: '',
+  distanceKm: '',
+  bodyWeightKg: '',
+  gender: '',
+  age: '',
+  experience: 'intermediate',
+  sweatLevel: 'medium',
+  saltiness: 'medium',
+  temperature: 'warm',
+  sweatRateMlHr: '',
+  sweatSodiumMgL: '',
+  splits: null,
+};
+
+export default function App() {
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState(initialForm);
+  const [plan, setPlan] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const isTri = form.sport === 'triathlon';
+  const STEPS = isTri ? TRI_STEPS : BASE_STEPS;
+
+  const update = (fields) => setForm(prev => ({ ...prev, ...fields }));
+
+  const next = () => setStep(s => Math.min(s + 1, STEPS.length - 1));
+  const back = () => setStep(s => Math.max(s - 1, 0));
+
+  const submit = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sport: form.sport,
+          durationHrs: parseFloat(form.durationHrs),
+          bodyWeightKg: parseFloat(form.bodyWeightKg),
+          gender: form.gender || 'male',
+          age: parseInt(form.age) || 30,
+          sweatLevel: form.sweatLevel,
+          saltiness: form.saltiness,
+          temperature: form.temperature,
+          sweatRateMlHr: form.sweatRateMlHr ? parseFloat(form.sweatRateMlHr) : null,
+          sweatSodiumMgL: form.sweatSodiumMgL ? parseFloat(form.sweatSodiumMgL) : null,
+          experience: form.experience,
+          splits: form.splits || null,
+        }),
+      });
+
+      // Handle empty or non-JSON response (server down or proxy error)
+      const text = await res.text();
+      if (!text || text.trim() === '') {
+        throw new Error('Server không phản hồi. Hãy đóng terminal và chạy lại start-planner.bat');
+      }
+      let data;
+      try { data = JSON.parse(text); }
+      catch { throw new Error('Server lỗi: ' + text.slice(0, 100)); }
+      if (!res.ok) throw new Error(data.error || 'Tính toán thất bại');
+      setPlan(data.plan);
+      setStep(STEPS.length - 1); // always jump to last step (Results)
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const restart = () => {
+    setForm(initialForm);
+    setPlan(null);
+    setError(null);
+    setStep(0);
+  };
+
+  return (
+    <div style={styles.app}>
+      <Header />
+      <ProgressBar step={step} steps={STEPS} />
+
+      <main style={styles.main}>
+        {step === 0 && <StepSport form={form} update={update} next={next} />}
+        {step === 1 && <StepEvent form={form} update={update} next={next} back={back} />}
+
+        {/* Splits step — only for triathlon (index 2 in TRI_STEPS) */}
+        {isTri && step === 2 && <StepSplits form={form} update={update} next={next} back={back} />}
+
+        {/* Body step — index 2 (non-tri) or 3 (tri) */}
+        {step === (isTri ? 3 : 2) && <StepBody form={form} update={update} next={next} back={back} />}
+
+        {/* Sweat step — index 3 (non-tri) or 4 (tri) */}
+        {step === (isTri ? 4 : 3) && (
+          <StepSweat
+            form={form}
+            update={update}
+            back={back}
+            submit={submit}
+            loading={loading}
+            error={error}
+          />
+        )}
+
+        {/* Results — index 4 (non-tri) or 5 (tri) */}
+        {step === (isTri ? 5 : 4) && plan && <Results plan={plan} form={form} restart={restart} />}
+      </main>
+
+      <footer style={styles.footer}>
+        <p>Powered by <a href="https://www.hiboostnutrition.com" style={styles.link} target="_blank" rel="noreferrer">HiBoost Nutrition</a> · Based on ACSM & ISSN sports science guidelines</p>
+      </footer>
+    </div>
+  );
+}
+
+function Header() {
+  return (
+    <header style={styles.header}>
+      <div style={styles.headerInner}>
+        <div style={styles.logo}>
+          <span style={styles.logoIcon}>⚡</span>
+          <span style={styles.logoText}>HiBoost</span>
+          <span style={styles.logoSub}>Nutrition Planner</span>
+        </div>
+        <a href="https://www.hiboostnutrition.com/shop" target="_blank" rel="noreferrer" style={styles.shopBtn}>
+          Shop Products →
+        </a>
+      </div>
+    </header>
+  );
+}
+
+function ProgressBar({ step, steps }) {
+  return (
+    <div style={styles.progressWrap}>
+      <div style={styles.progressInner}>
+        {steps.map((label, i) => (
+          <div key={i} style={styles.progressItem}>
+            <div style={{
+              ...styles.progressDot,
+              background: i < step ? '#22c55e' : i === step ? '#f97316' : '#e2e8f0',
+              border: i === step ? '2px solid #f97316' : i < step ? '2px solid #22c55e' : '2px solid #cbd5e1',
+              color: i < step || i === step ? '#fff' : '#94a3b8',
+            }}>
+              {i < step ? '✓' : i + 1}
+            </div>
+            <span style={{
+              ...styles.progressLabel,
+              color: i === step ? '#f97316' : i < step ? '#16a34a' : '#94a3b8',
+            }}>{label}</span>
+          </div>
+        ))}
+        <div style={styles.progressLine}>
+          <div style={{ ...styles.progressFill, width: `${(step / (steps.length - 1)) * 100}%` }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const styles = {
+  app: { minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc' },
+  header: { background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' },
+  headerInner: { maxWidth: 900, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 },
+  logo: { display: 'flex', alignItems: 'center', gap: 8 },
+  logoIcon: { fontSize: 24 },
+  logoText: { fontSize: 22, fontWeight: 800, color: '#f97316', letterSpacing: '-0.5px' },
+  logoSub: { fontSize: 13, color: '#94a3b8', marginLeft: 4, fontWeight: 500 },
+  shopBtn: { background: '#f97316', color: '#fff', padding: '8px 18px', borderRadius: 8, textDecoration: 'none', fontSize: 13, fontWeight: 600, boxShadow: '0 2px 8px rgba(249,115,22,0.25)' },
+  progressWrap: { background: '#fff', padding: '20px 24px 0', borderBottom: '1px solid #e2e8f0' },
+  progressInner: { maxWidth: 700, margin: '0 auto', display: 'flex', justifyContent: 'space-between', position: 'relative', paddingBottom: 20 },
+  progressItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, zIndex: 1 },
+  progressDot: { width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, transition: 'all 0.3s', color: '#fff' },
+  progressLabel: { fontSize: 11, fontWeight: 500, transition: 'color 0.3s', whiteSpace: 'nowrap' },
+  progressLine: { position: 'absolute', top: 16, left: '5%', right: '5%', height: 2, background: '#e2e8f0', zIndex: 0 },
+  progressFill: { height: '100%', background: 'linear-gradient(90deg, #22c55e, #f97316)', transition: 'width 0.4s ease', borderRadius: 2 },
+  main: { flex: 1, padding: '40px 24px' },
+  footer: { padding: '20px 24px', textAlign: 'center', borderTop: '1px solid #e2e8f0', color: '#94a3b8', fontSize: 12 },
+  link: { color: '#f97316', textDecoration: 'none' },
+};
