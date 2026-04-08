@@ -544,8 +544,8 @@ const HIBOOST_PRODUCTS = [
     brand: 'Maurten',
     type: 'carb+fluid',
     servingSize: '1 sachet (83g) in 500ml water',
-    // 80g carbs, 320 kcal, ~245mg sodium per sachet. Source: thefeed.com, nutri-bay.com (0.62g salt = ~244mg Na)
-    nutrition: { carbsG: 80, sodiumMg: 245, potassiumMg: 0, proteinG: 0, calories: 320 },
+    // 80g carbs, 320 kcal, 110mg sodium (salt 0.28g/serving). Source: maurten.com official nutrition label
+    nutrition: { carbsG: 80, sodiumMg: 110, potassiumMg: 0, proteinG: 0, calories: 320 },
     fluidMl: 500,
     priceVND: 120000,
     priceUSD: 4.8,
