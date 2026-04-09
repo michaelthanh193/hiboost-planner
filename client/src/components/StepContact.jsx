@@ -1,16 +1,18 @@
 import { useState } from 'react';
+import { useLang } from '../LangContext';
 
 export default function StepContact({ form, update, back, submit, loading, error }) {
+  const { t } = useLang();
   const [touched, setTouched] = useState({});
 
   const touch = (field) => setTouched(t => ({ ...t, [field]: true }));
 
   const errors = {
-    firstName: !form.firstName?.trim() ? 'Vui lòng nhập tên' : null,
-    lastName:  !form.lastName?.trim()  ? 'Vui lòng nhập họ' : null,
-    email:     !form.email?.trim()     ? 'Vui lòng nhập email'
-               : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) ? 'Email không hợp lệ' : null,
-    phone:     form.phone && !/^[0-9+\-\s()]{7,15}$/.test(form.phone) ? 'Số điện thoại không hợp lệ' : null,
+    firstName: !form.firstName?.trim() ? t('contact_err_first') : null,
+    lastName:  !form.lastName?.trim()  ? t('contact_err_last') : null,
+    email:     !form.email?.trim()     ? t('contact_err_email')
+               : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) ? t('contact_err_email2') : null,
+    phone:     form.phone && !/^[0-9+\-\s()]{7,15}$/.test(form.phone) ? t('contact_err_phone') : null,
   };
 
   const canSubmit = !errors.firstName && !errors.lastName && !errors.email && !errors.phone && !loading;
@@ -24,15 +26,12 @@ export default function StepContact({ form, update, back, submit, loading, error
     <div style={styles.container}>
       <div style={styles.card}>
         <div style={styles.iconWrap}>📋</div>
-        <h1 style={styles.title}>Nhận kế hoạch của bạn</h1>
-        <p style={styles.subtitle}>
-          Điền thông tin để nhận kế hoạch dinh dưỡng cá nhân hoá. Dữ liệu chỉ dùng để liên hệ hỗ trợ, không chia sẻ bên thứ ba.
-        </p>
+        <h1 style={styles.title}>{t('contact_title')}</h1>
+        <p style={styles.subtitle}>{t('contact_subtitle')}</p>
 
         <div className="form-grid" style={styles.formGrid}>
-          {/* Họ */}
           <Field
-            label="Họ"
+            label={t('contact_lastname')}
             required
             error={touched.lastName && errors.lastName}
           >
@@ -45,9 +44,8 @@ export default function StepContact({ form, update, back, submit, loading, error
             />
           </Field>
 
-          {/* Tên */}
           <Field
-            label="Tên"
+            label={t('contact_firstname')}
             required
             error={touched.firstName && errors.firstName}
           >
@@ -60,9 +58,8 @@ export default function StepContact({ form, update, back, submit, loading, error
             />
           </Field>
 
-          {/* Email */}
           <Field
-            label="Email"
+            label={t('contact_email')}
             required
             error={touched.email && errors.email}
             full
@@ -77,10 +74,9 @@ export default function StepContact({ form, update, back, submit, loading, error
             />
           </Field>
 
-          {/* Số điện thoại */}
           <Field
-            label="Số điện thoại"
-            hint="Không bắt buộc"
+            label={t('contact_phone')}
+            hint={t('contact_optional')}
             error={touched.phone && errors.phone}
             full
           >
@@ -95,21 +91,18 @@ export default function StepContact({ form, update, back, submit, loading, error
           </Field>
         </div>
 
-        {/* Privacy note */}
-        <div style={styles.privacyNote}>
-          🔒 Thông tin của bạn được bảo mật và chỉ dùng để cung cấp kế hoạch dinh dưỡng từ HiBoost.
-        </div>
+        <div style={styles.privacyNote}>{t('contact_privacy')}</div>
 
         {error && <div style={styles.errorBanner}>⚠️ {error}</div>}
 
         <div style={styles.navRow}>
-          <button style={styles.backBtn} onClick={back} disabled={loading}>← Quay lại</button>
+          <button style={styles.backBtn} onClick={back} disabled={loading}>{t('back')}</button>
           <button
             style={{ ...styles.submitBtn, opacity: canSubmit ? 1 : 0.5 }}
             onClick={handleSubmit}
             disabled={!canSubmit}
           >
-            {loading ? '⏳ Đang tính toán...' : '🚀 Tạo Kế Hoạch →'}
+            {loading ? t('contact_loading') : t('contact_submit')}
           </button>
         </div>
       </div>
