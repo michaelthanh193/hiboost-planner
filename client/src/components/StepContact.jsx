@@ -29,7 +29,7 @@ export default function StepContact({ form, update, back, submit, loading, error
           Điền thông tin để nhận kế hoạch dinh dưỡng cá nhân hoá. Dữ liệu chỉ dùng để liên hệ hỗ trợ, không chia sẻ bên thứ ba.
         </p>
 
-        <div style={styles.formGrid}>
+        <div className="form-grid" style={styles.formGrid}>
           {/* Họ */}
           <Field
             label="Họ"

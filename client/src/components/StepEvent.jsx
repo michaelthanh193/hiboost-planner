@@ -210,9 +210,6 @@ export default function StepEvent({ form, update, next, back }) {
                   >
                     <div style={styles.eventName}>{evt.label}</div>
                     {evt.dist && <div style={styles.eventDist}>{evt.dist}</div>}
-                    <div style={styles.eventTimeRange}>
-                      {fmtHrs(evt.tiers.advanced)} – {fmtHrs(evt.tiers.beginner)}
-                    </div>
                   </button>
                 );
               })}
@@ -286,7 +283,7 @@ export default function StepEvent({ form, update, next, back }) {
         {showCustom && (
           <div style={styles.customBox}>
             <div style={styles.customTitle}>✏️ Custom Event</div>
-            <div style={styles.customFields}>
+            <div className="custom-fields" style={styles.customFields}>
               <div style={styles.fieldGroup}>
                 <label style={styles.label}>Event Name <span style={styles.optional}>(optional)</span></label>
                 <input

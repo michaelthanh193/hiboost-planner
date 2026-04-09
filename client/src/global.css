@@ -1,0 +1,372 @@
+/* ── Global resets ───────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Responsive layout helpers ──────────────────────────────────────────── */
+
+/* Card containers */
+.step-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 40px 36px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+}
+
+/* Sports grid */
+.sports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+/* Event grid */
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  gap: 10px;
+}
+
+/* Tier grid: 3 columns on desktop */
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+/* Body gender row */
+.gender-row {
+  display: flex;
+  gap: 14px;
+}
+
+/* Experience radio group */
+.radio-group {
+  display: flex;
+  gap: 12px;
+}
+
+/* Temperature grid: 3 cols */
+.temp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+/* Contact form grid: 2 cols */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
+  margin-bottom: 20px;
+}
+.form-grid .field-full { grid-column: 1 / -1; }
+
+/* Results metrics: 4 cols */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+/* Results two-column layout */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+/* Segment grid */
+.seg-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+/* Progress bar inner */
+.progress-inner {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  padding-bottom: 20px;
+}
+
+/* Nav row */
+.nav-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* ── Tablet (≤ 768px) ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .step-card {
+    padding: 28px 20px;
+    border-radius: 12px;
+  }
+
+  .tier-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .metrics-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .seg-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sports-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+
+  .temp-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  /* Hero banner stacks on tablet */
+  .hero-banner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+}
+
+/* ── Small tablet / large phone (≤ 600px) ─────────────────────────────── */
+@media (max-width: 600px) {
+  /* Progress bar: tighter font */
+  .progress-label {
+    font-size: 9px;
+  }
+  .progress-dot {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 11px !important;
+  }
+
+  /* Shop button: shorter text, smaller padding */
+  .shop-btn {
+    font-size: 12px !important;
+    padding: 7px 10px !important;
+  }
+}
+
+/* ── Mobile (≤ 480px) ────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .step-card {
+    padding: 20px 14px;
+    border-radius: 10px;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    box-shadow: none;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .sports-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .event-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .tier-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .gender-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .radio-group {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .temp-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-grid .field-full { grid-column: 1; }
+
+  .metrics-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .two-col {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .seg-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .nav-row {
+    gap: 8px;
+  }
+
+  .progress-inner {
+    gap: 0;
+  }
+}
+
+/* ── Progress bar labels: hide on very small screens ─────────────────────── */
+@media (max-width: 400px) {
+  .progress-label {
+    display: none;
+  }
+  .progress-dot {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 10px !important;
+  }
+}
+
+/* ── Header responsive ───────────────────────────────────────────────────── */
+.header-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .header-inner {
+    height: 52px;
+  }
+  .logo-sub {
+    display: none;
+  }
+  .shop-btn {
+    font-size: 11px !important;
+    padding: 6px 10px !important;
+  }
+  .lang-btn {
+    font-size: 11px !important;
+    padding: 5px 8px !important;
+  }
+}
+
+/* ── Main padding ────────────────────────────────────────────────────────── */
+.app-main {
+  flex: 1;
+  padding: 32px 16px;
+}
+
+@media (max-width: 480px) {
+  .app-main {
+    padding: 16px 0;
+  }
+}
+
+/* ── Results hero banner ─────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .hero-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 20px 16px !important;
+  }
+  .hero-title {
+    font-size: 22px !important;
+  }
+  .restart-btn {
+    align-self: flex-end;
+  }
+}
+
+/* ── Results CTA banner ──────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .cta-banner {
+    flex-direction: column;
+    gap: 14px;
+    text-align: center;
+  }
+}
+
+/* ── Sweat test fields: stack on mobile ─────────────────────────────────── */
+.sweat-test-fields {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 480px) {
+  .sweat-test-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Sweat/salt option grid ──────────────────────────────────────────────── */
+.option-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  gap: 10px;
+}
+@media (max-width: 480px) {
+  .option-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+}
+
+/* ── Custom event form ───────────────────────────────────────────────────── */
+.custom-fields {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+@media (max-width: 600px) {
+  .custom-fields {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Results CTA banner ──────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .cta-banner {
+    flex-direction: column !important;
+    gap: 14px !important;
+    text-align: center !important;
+  }
+}
+
+/* ── Touch targets: minimum 44px on mobile ───────────────────────────────── */
+@media (max-width: 480px) {
+  .nav-row button,
+  .nav-row a {
+    min-height: 44px;
+  }
+}

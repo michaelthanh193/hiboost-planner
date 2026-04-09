@@ -14,7 +14,7 @@ export default function Results({ plan, form, restart }) {
   return (
     <div style={styles.container}>
       {/* Hero Banner */}
-      <div style={styles.heroBanner}>
+      <div className="hero-banner" style={styles.heroBanner}>
         <div style={styles.heroLeft}>
           <p style={styles.heroSubtitle}>Your personalized race plan</p>
           <h1 style={styles.heroTitle}>
@@ -43,7 +43,7 @@ export default function Results({ plan, form, restart }) {
       )}
 
       {/* Key Numbers */}
-      <div style={styles.metricsRow}>
+      <div className="metrics-row" style={styles.metricsRow}>
         <MetricCard
           icon="🍬"
           value={`${perHour.carbsG}g`}
@@ -79,7 +79,7 @@ export default function Results({ plan, form, restart }) {
         <div style={styles.section}>
           <h2 style={styles.sectionTitle}>🏁 Segment Fuel Breakdown</h2>
           <p style={styles.sectionDesc}>Nutrition targets for each part of your race.</p>
-          <div style={styles.segGrid}>
+          <div className="seg-grid" style={styles.segGrid}>
             {segmentBreakdown.map((seg, i) => (
               <div key={i} style={styles.segCard}>
                 <div style={styles.segTop}>
@@ -106,7 +106,7 @@ export default function Results({ plan, form, restart }) {
         </div>
       )}
 
-      <div style={styles.twoCol}>
+      <div className="two-col" style={styles.twoCol}>
         {/* Segmented Timeline */}
         <div style={styles.section}>
           <h2 style={styles.sectionTitle}>⏱ Race Timeline</h2>
@@ -189,7 +189,7 @@ export default function Results({ plan, form, restart }) {
       </div>
 
       {/* CTA */}
-      <div style={styles.ctaBanner}>
+      <div className="cta-banner" style={styles.ctaBanner}>
         <div>
           <h3 style={styles.ctaTitle}>Ready to race?</h3>
           <p style={styles.ctaDesc}>Shop all recommended products on HiBoost Nutrition.</p>
