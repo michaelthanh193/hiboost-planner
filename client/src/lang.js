@@ -62,6 +62,7 @@ export const translations = {
     event_custom_back:     '← Back to event list',
     event_cant_find:       "Can't find your event?",
     event_custom_link:     'Enter custom event →',
+    event_level_for:       "What's your level for",
 
     // ── StepSplits ────────────────────────────────────────────────────────────
     splits_title:      'Race Split Times',
@@ -123,6 +124,19 @@ export const translations = {
     salt_medium:     'Some white marks',     salt_medium_desc:    'Faint salt residue after long efforts',
     salt_high:       'Heavy salt residue',   salt_high_desc:      'Clear white crust on skin after sweating',
     salt_very_high:  'Very salty',           salt_very_high_desc: 'Burns eyes, heavy white crust everywhere',
+    
+    // Temperature
+    temp_cold: '< 10°C', desc_cold: 'Very cold',
+    temp_cool: '10–15°C', desc_cool: 'Cool',
+    temp_mild: '15–20°C', desc_mild: 'Mild',
+    temp_warm: '20–25°C', desc_warm: 'Warm',
+    temp_hot: '25–30°C', desc_hot: 'Hot',
+    temp_very_hot: '> 30°C', desc_very_hot: 'Very hot',
+
+    sweat_test_success_1: 'Your plan will use',
+    sweat_test_success_2: 'ml/hr sweat rate and',
+    sweat_test_success_3: 'mg/L sodium.',
+
 
     // ── StepContact ───────────────────────────────────────────────────────────
     contact_title:    'Get Your Plan',
@@ -240,6 +254,7 @@ export const translations = {
     event_custom_back:     '← Quay lại danh sách',
     event_cant_find:       'Không tìm thấy sự kiện?',
     event_custom_link:     'Nhập sự kiện tùy chỉnh →',
+    event_level_for:       'Trình độ của bạn cho',
 
     // ── StepSplits ────────────────────────────────────────────────────────────
     splits_title:    'Thời Gian Phân Đoạn',
@@ -301,6 +316,19 @@ export const translations = {
     salt_medium:     'Vài vệt trắng',    salt_medium_desc:    'Cặn muối nhạt sau các buổi dài',
     salt_high:       'Cặn muối nhiều',   salt_high_desc:      'Lớp vỏ trắng rõ trên da sau khi đổ mồ hôi',
     salt_very_high:  'Rất mặn',          salt_very_high_desc: 'Cay mắt, lớp vỏ trắng dày khắp nơi',
+
+    // Temperature
+    temp_cold: '< 10°C', desc_cold: 'Rất lạnh',
+    temp_cool: '10–15°C', desc_cool: 'Mát mẻ',
+    temp_mild: '15–20°C', desc_mild: 'Mát mẻ / Ôn hòa',
+    temp_warm: '20–25°C', desc_warm: 'Ấm áp',
+    temp_hot: '25–30°C', desc_hot: 'Nóng',
+    temp_very_hot: '> 30°C', desc_very_hot: 'Rất nóng',
+
+    sweat_test_success_1: 'Kế hoạch sẽ dùng',
+    sweat_test_success_2: 'ml/h tốc độ mồ hôi và',
+    sweat_test_success_3: 'mg/L natri.',
+
 
     // ── StepContact ───────────────────────────────────────────────────────────
     contact_title:    'Nhận Kế Hoạch Của Bạn',

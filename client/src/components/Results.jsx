@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLang } from '../LangContext';
 
 function fmtHrs(h) {
   if (!h || h <= 0) return '—';
@@ -9,6 +10,7 @@ function fmtHrs(h) {
 }
 
 export default function Results({ plan, form, restart }) {
+  const { t } = useLang();
   const { perHour, totals, timeline, products, tips, sweatRatePerHr, meta, segmentBreakdown } = plan;
 
   return (
@@ -16,17 +18,17 @@ export default function Results({ plan, form, restart }) {
       {/* Hero Banner */}
       <div className="hero-banner" style={styles.heroBanner}>
         <div style={styles.heroLeft}>
-          <p style={styles.heroSubtitle}>Your personalized race plan</p>
+          <p style={styles.heroSubtitle}>{t('results_subtitle')}</p>
           <h1 style={styles.heroTitle}>
             {capitalise(meta.sport)}
             {form.eventName ? ` · ${form.eventName}` : ''}
             {` · ${fmtHrs(meta.durationHrs)}`}
           </h1>
           <p style={styles.heroDetail}>
-            {meta.bodyWeightKg}kg · {meta.gender === 'female' ? '♀ Female' : '♂ Male'} · Age {meta.age} · {capitalise(meta.sweatLevel)} sweater · {capitalise(meta.temperature)} conditions
+            {meta.bodyWeightKg}kg · {meta.gender === 'female' ? `♀ ${t('body_female')}` : `♂ ${t('body_male')}`} · {t('body_age')} {meta.age} · {t(`sweat_${meta.sweatLevel}`)} · {t(`temp_${meta.temperature}`)}
           </p>
         </div>
-        <button style={styles.restartBtn} onClick={restart}>↩ New Plan</button>
+        <button style={styles.restartBtn} onClick={restart}>{t('results_new')}</button>
       </div>
 
       {/* Physiology note */}
@@ -36,7 +38,7 @@ export default function Results({ plan, form, restart }) {
           <span>{meta.physiologyNote}</span>
           {meta.sweatTestUsed && (
             <span style={styles.sweatTestBadge}>
-              🧪 Sweat test data used · {meta.sweatRateMlHr && `${meta.sweatRateMlHr} ml/hr`}{meta.sweatSodiumMgL && ` · ${meta.sweatSodiumMgL} mg/L sodium`}
+              🧪 {meta.sweatRateMlHr && `${meta.sweatRateMlHr} ml/h`}{meta.sweatSodiumMgL && ` · ${meta.sweatSodiumMgL} mg/L`}
             </span>
           )}
         </div>
@@ -47,29 +49,29 @@ export default function Results({ plan, form, restart }) {
         <MetricCard
           icon="🍬"
           value={`${perHour.carbsG}g`}
-          label="Carbs / hour"
-          sub={`${totals.carbsG}g total`}
+          label={t('results_carbs_hr')}
+          sub={`${totals.carbsG}g ${t('results_total')}`}
           color="#f97316"
         />
         <MetricCard
           icon="🧂"
           value={`${perHour.sodiumMg}mg`}
-          label="Sodium / hour"
-          sub={`${totals.sodiumMg}mg total`}
+          label={t('results_sodium_hr')}
+          sub={`${totals.sodiumMg}mg ${t('results_total')}`}
           color="#3b82f6"
         />
         <MetricCard
           icon="💧"
           value={`${perHour.fluidMl}ml`}
-          label="Fluid / hour"
-          sub={`${totals.fluidMl}ml total`}
+          label={t('results_fluid_hr')}
+          sub={`${totals.fluidMl}ml ${t('results_total')}`}
           color="#22c55e"
         />
         <MetricCard
           icon="🌊"
           value={`${sweatRatePerHr}ml`}
-          label="Sweat rate / hour"
-          sub={meta.sweatTestUsed && meta.sweatRateMlHr ? '🧪 from your test' : 'estimated'}
+          label={t('results_sweat_hr')}
+          sub={meta.sweatTestUsed && meta.sweatRateMlHr ? t('results_from_test') : t('results_estimated')}
           color="#a855f7"
         />
       </div>
@@ -77,8 +79,8 @@ export default function Results({ plan, form, restart }) {
       {/* Triathlon Segment Breakdown */}
       {segmentBreakdown && segmentBreakdown.length > 0 && (
         <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>🏁 Segment Fuel Breakdown</h2>
-          <p style={styles.sectionDesc}>Nutrition targets for each part of your race.</p>
+          <h2 style={styles.sectionTitle}>{t('results_segment')}</h2>
+          <p style={styles.sectionDesc}>{t('results_segment_sub')}</p>
           <div className="seg-grid" style={styles.segGrid}>
             {segmentBreakdown.map((seg, i) => (
               <div key={i} style={styles.segCard}>
@@ -94,10 +96,10 @@ export default function Results({ plan, form, restart }) {
                   </div>
                 </div>
                 <div style={styles.segNums}>
-                  {seg.carbsG > 0   && <Pill color="#f97316">{seg.carbsG}g carbs</Pill>}
+                  {seg.carbsG > 0   && <Pill color="#f97316">{seg.carbsG}g {t('nf_carbs')}</Pill>}
                   {seg.fluidMl > 0  && <Pill color="#22c55e">{seg.fluidMl}ml fluid</Pill>}
-                  {seg.sodiumMg > 0 && <Pill color="#3b82f6">{seg.sodiumMg}mg sodium</Pill>}
-                  {seg.carbsG === 0 && seg.fluidMl === 0 && <Pill color="#6b7280">No fuelling</Pill>}
+                  {seg.sodiumMg > 0 && <Pill color="#3b82f6">{seg.sodiumMg}mg {t('nf_sodium')}</Pill>}
+                  {seg.carbsG === 0 && seg.fluidMl === 0 && <Pill color="#6b7280">{t('results_no_fuel')}</Pill>}
                 </div>
                 {seg.note && <p style={styles.segNote}>{seg.note}</p>}
               </div>
@@ -109,8 +111,8 @@ export default function Results({ plan, form, restart }) {
       <div className="two-col" style={styles.twoCol}>
         {/* Segmented Timeline */}
         <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>⏱ Race Timeline</h2>
-          <p style={styles.sectionDesc}>Checkpoints by segment — when and what to take.</p>
+          <h2 style={styles.sectionTitle}>{t('results_timeline')}</h2>
+          <p style={styles.sectionDesc}>{t('results_timeline_sub')}</p>
           <div style={styles.timeline}>
             {timeline.map((section, si) => (
               <div key={si} style={styles.timelineSection}>
@@ -140,11 +142,11 @@ export default function Results({ plan, form, restart }) {
                         {point.note && <span style={styles.timelineNote}>{point.note}</span>}
                       </div>
                       <div style={styles.timelineNums}>
-                        {point.carbsG > 0   && <Pill color="#f97316">{point.carbsG}g carbs</Pill>}
+                        {point.carbsG > 0   && <Pill color="#f97316">{point.carbsG}g {t('nf_carbs')}</Pill>}
                         {point.fluidMl > 0  && <Pill color="#22c55e">{point.fluidMl}ml fluid</Pill>}
-                        {point.sodiumMg > 0 && <Pill color="#3b82f6">{point.sodiumMg}mg sodium</Pill>}
+                        {point.sodiumMg > 0 && <Pill color="#3b82f6">{point.sodiumMg}mg {t('nf_sodium')}</Pill>}
                         {point.carbsG === 0 && point.fluidMl === 0 && point.sodiumMg === 0 &&
-                          <Pill color="#94a3b8">No fuelling</Pill>}
+                          <Pill color="#94a3b8">{t('results_no_fuel')}</Pill>}
                       </div>
                     </div>
                   </div>
@@ -158,14 +160,14 @@ export default function Results({ plan, form, restart }) {
         <div>
           {/* Product Recommendations */}
           <div style={styles.section}>
-            <h2 style={styles.sectionTitle}>🛒 Recommended Products</h2>
-            <p style={styles.sectionDesc}>From the HiBoost catalog, matched to your plan.</p>
+            <h2 style={styles.sectionTitle}>{t('results_products')}</h2>
+            <p style={styles.sectionDesc}>{t('results_products_sub')}</p>
             {products.length === 0 ? (
-              <p style={{ color: '#6b7280', fontSize: 14 }}>Short effort — water only, no products needed.</p>
+              <p style={{ color: '#6b7280', fontSize: 14 }}>{t('results_no_products')}</p>
             ) : (
               <div style={styles.productList}>
                 {products.map((p, i) => (
-                  <ProductCard key={i} product={p} />
+                  <ProductCard key={i} product={p} t={t} />
                 ))}
               </div>
             )}
@@ -174,7 +176,7 @@ export default function Results({ plan, form, restart }) {
           {/* Science Tips */}
           {tips.length > 0 && (
             <div style={styles.section}>
-              <h2 style={styles.sectionTitle}>💡 Key Tips for Your Plan</h2>
+              <h2 style={styles.sectionTitle}>{t('results_tips')}</h2>
               <ul style={styles.tipList}>
                 {tips.map((tip, i) => (
                   <li key={i} style={styles.tipItem}>
@@ -191,16 +193,16 @@ export default function Results({ plan, form, restart }) {
       {/* CTA */}
       <div className="cta-banner" style={styles.ctaBanner}>
         <div>
-          <h3 style={styles.ctaTitle}>Ready to race?</h3>
-          <p style={styles.ctaDesc}>Shop all recommended products on HiBoost Nutrition.</p>
+          <h3 style={styles.ctaTitle}>{t('results_cta_title')}</h3>
+          <p style={styles.ctaDesc}>{t('results_cta_desc')}</p>
         </div>
         <a href="https://www.hiboostnutrition.com/shop" target="_blank" rel="noreferrer" style={styles.ctaBtn}>
-          Shop Now →
+          {t('results_cta_btn')}
         </a>
       </div>
 
       <div style={styles.disclaimer}>
-        ⚠️ This plan is generated based on population-average sports science formulas. Individual needs vary. Always test your nutrition strategy in training before race day. Consult a sports dietitian for medical or high-performance guidance.
+        {t('results_disclaimer')}
       </div>
     </div>
   );
@@ -225,7 +227,7 @@ function Pill({ color, children }) {
   );
 }
 
-function ProductCard({ product }) {
+function ProductCard({ product, t }) {
   const [showNutrition, setShowNutrition] = useState(false);
   const nf = product.nutrition || {};
 
@@ -249,14 +251,14 @@ function ProductCard({ product }) {
       {/* Nutrition Facts tooltip — shown on hover */}
       {showNutrition && Object.keys(nf).length > 0 && (
         <div style={styles.nutritionTooltip}>
-          <div style={styles.nfTitle}>Nutrition Facts <span style={styles.nfServing}>per serving ({product.servingSize || '1 unit'})</span></div>
+          <div style={styles.nfTitle}>{t('nf_title')} <span style={styles.nfServing}>{t('nf_per_serving')} ({product.servingSize || '1 unit'})</span></div>
           <div style={styles.nfGrid}>
-            {nf.calories != null && <NfRow label="Calories" value={`${nf.calories} kcal`} />}
-            {nf.carbsG != null    && <NfRow label="Carbs" value={`${nf.carbsG}g`} color="#f97316" />}
-            {nf.sodiumMg != null  && <NfRow label="Sodium" value={`${nf.sodiumMg}mg`} color="#3b82f6" />}
-            {nf.potassiumMg != null && nf.potassiumMg > 0 && <NfRow label="Potassium" value={`${nf.potassiumMg}mg`} color="#8b5cf6" />}
-            {nf.proteinG != null && nf.proteinG > 0  && <NfRow label="Protein" value={`${nf.proteinG}g`} color="#16a34a" />}
-            {nf.caffeineMg != null && <NfRow label="Caffeine" value={`${nf.caffeineMg}mg`} color="#dc2626" />}
+            {nf.calories != null && <NfRow label={t('nf_calories')} value={`${nf.calories} kcal`} />}
+            {nf.carbsG != null    && <NfRow label={t('nf_carbs')} value={`${nf.carbsG}g`} color="#f97316" />}
+            {nf.sodiumMg != null  && <NfRow label={t('nf_sodium')} value={`${nf.sodiumMg}mg`} color="#3b82f6" />}
+            {nf.potassiumMg != null && nf.potassiumMg > 0 && <NfRow label={t('nf_potassium')} value={`${nf.potassiumMg}mg`} color="#8b5cf6" />}
+            {nf.proteinG != null && nf.proteinG > 0  && <NfRow label={t('nf_protein')} value={`${nf.proteinG}g`} color="#16a34a" />}
+            {nf.caffeineMg != null && <NfRow label={t('nf_caffeine')} value={`${nf.caffeineMg}mg`} color="#dc2626" />}
           </div>
         </div>
       )}

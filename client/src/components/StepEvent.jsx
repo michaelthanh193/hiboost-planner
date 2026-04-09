@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLang } from '../LangContext';
 
 // ─── SPORT-SPECIFIC EVENT CATALOG ────────────────────────────────────────────
 // Each event has 3 tiers: Beginner, Intermediate, Advanced finish times
@@ -144,6 +145,7 @@ function fmtHrs(h) {
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 
 export default function StepEvent({ form, update, next, back }) {
+  const { t } = useLang();
   const [showCustom, setShowCustom] = useState(false);
 
   const sportKey = form.sport || 'running';
@@ -184,9 +186,9 @@ export default function StepEvent({ form, update, next, back }) {
         {/* Title + sport badge */}
         <div style={styles.titleRow}>
           <div>
-            <h1 style={styles.title}>What's your event?</h1>
+            <h1 style={styles.title}>{t('event_title')}</h1>
             <p style={styles.subtitle}>
-              Select your race distance, then pick your target pace.
+              {t('event_subtitle')}
             </p>
           </div>
           <div style={styles.sportBadge}>
@@ -198,7 +200,7 @@ export default function StepEvent({ form, update, next, back }) {
         {/* Event groups */}
         {!showCustom && catalog.groups.map((group) => (
           <div key={group.groupLabel} style={styles.group}>
-            <div style={styles.groupLabel}>{group.groupLabel}</div>
+            <div style={styles.groupLabel}>{t('event_group_' + group.groupLabel.toLowerCase().replace(/[^a-z]+/g, '_').replace(/_$/, '')) || group.groupLabel}</div>
             <div style={styles.eventGrid}>
               {group.events.map(evt => {
                 const selected = form.eventName === evt.label;
@@ -221,26 +223,26 @@ export default function StepEvent({ form, update, next, back }) {
         {!showCustom && selectedEvt && (
           <div style={styles.tierSection}>
             <div style={styles.tierTitle}>
-              What's your level for <strong>{selectedEvt.label}</strong>?
+              {t('event_level_for')} <strong>{selectedEvt.label}</strong>?
             </div>
             <div style={styles.tierGrid}>
-              {TIER_META.map(t => {
-                const hrs = selectedEvt.tiers[t.key];
-                const active = selectedTier === t.key;
+              {TIER_META.map(tier => {
+                const hrs = selectedEvt.tiers[tier.key];
+                const active = selectedTier === tier.key;
                 return (
                   <button
-                    key={t.key}
-                    onClick={() => selectTier(t.key)}
+                    key={tier.key}
+                    onClick={() => selectTier(tier.key)}
                     style={{
                       ...styles.tierBtn,
-                      borderColor: active ? t.color : '#e2e8f0',
-                      background: active ? t.color + '0d' : '#f8fafc',
+                      borderColor: active ? tier.color : '#e2e8f0',
+                      background: active ? tier.color + '0d' : '#f8fafc',
                     }}
                   >
-                    <span style={styles.tierIcon}>{t.icon}</span>
-                    <span style={{ ...styles.tierLabel, color: active ? t.color : '#1e293b' }}>{t.label}</span>
-                    <span style={styles.tierDesc}>{t.desc}</span>
-                    <span style={{ ...styles.tierTime, color: t.color }}>{fmtHrs(hrs)}</span>
+                    <span style={styles.tierIcon}>{tier.icon}</span>
+                    <span style={{ ...styles.tierLabel, color: active ? tier.color : '#1e293b' }}>{t(`tier_${tier.key}`)}</span>
+                    <span style={styles.tierDesc}>{t(`tier_${tier.key}_desc`)}</span>
+                    <span style={{ ...styles.tierTime, color: tier.color }}>{fmtHrs(hrs)}</span>
                   </button>
                 );
               })}
@@ -252,10 +254,10 @@ export default function StepEvent({ form, update, next, back }) {
         {!showCustom && selectedEvt && selectedTier && (
           <div style={styles.timeAdjust}>
             <div style={styles.timeAdjustTitle}>
-              ⏱ Fine-tune your finish time
+              {t('event_finetune')}
             </div>
             <p style={styles.timeAdjustSub}>
-              Drag to match your expected pace. Range: {fmtHrs(sliderMin)} – {fmtHrs(sliderMax)}.
+              {t('event_finetune_sub')} {fmtHrs(sliderMin)} – {fmtHrs(sliderMax)}.
             </p>
             <div style={styles.sliderRow}>
               <span style={styles.sliderEdge}>{fmtHrs(sliderMin)}</span>
@@ -282,10 +284,10 @@ export default function StepEvent({ form, update, next, back }) {
         {/* Custom event form */}
         {showCustom && (
           <div style={styles.customBox}>
-            <div style={styles.customTitle}>✏️ Custom Event</div>
+            <div style={styles.customTitle}>{t('event_custom_title')}</div>
             <div className="custom-fields" style={styles.customFields}>
               <div style={styles.fieldGroup}>
-                <label style={styles.label}>Event Name <span style={styles.optional}>(optional)</span></label>
+                <label style={styles.label}>{t('event_custom_name')} <span style={styles.optional}>{t('event_custom_optional')}</span></label>
                 <input
                   style={styles.input}
                   placeholder="e.g. Mekong Delta Ultra"
@@ -294,7 +296,7 @@ export default function StepEvent({ form, update, next, back }) {
                 />
               </div>
               <div style={styles.fieldGroup}>
-                <label style={styles.label}>Duration <span style={styles.unit}>(hours)</span></label>
+                <label style={styles.label}>{t('event_custom_duration')} <span style={styles.unit}>{t('event_custom_hours')}</span></label>
                 <input
                   style={styles.input}
                   type="number" min="0.25" max="36" step="0.25"
@@ -304,7 +306,7 @@ export default function StepEvent({ form, update, next, back }) {
                 />
               </div>
               <div style={styles.fieldGroup}>
-                <label style={styles.label}>Distance <span style={styles.unit}>(km, optional)</span></label>
+                <label style={styles.label}>{t('event_custom_distance')} <span style={styles.unit}>{t('event_custom_km')}</span></label>
                 <input
                   style={styles.input}
                   type="number" min="1" max="1000"
@@ -314,29 +316,29 @@ export default function StepEvent({ form, update, next, back }) {
                 />
               </div>
             </div>
-            <button style={styles.switchBtn} onClick={() => setShowCustom(false)}>← Back to event list</button>
+            <button style={styles.switchBtn} onClick={() => setShowCustom(false)}>{t('event_custom_back')}</button>
           </div>
         )}
 
         {/* Custom link */}
         {!showCustom && (
           <div style={styles.customLink}>
-            Can't find your event?{' '}
+            {t('event_cant_find')}{' '}
             <button style={styles.customLinkBtn} onClick={() => { setShowCustom(true); update({ _eventMeta: null, _selectedTier: null }); }}>
-              Enter custom event →
+              {t('event_custom_link')}
             </button>
           </div>
         )}
 
         {/* Nav */}
         <div style={styles.navRow}>
-          <button style={styles.backBtn} onClick={back}>← Back</button>
+          <button style={styles.backBtn} onClick={back}>{t('back')}</button>
           <button
             style={{ ...styles.nextBtn, opacity: canContinue ? 1 : 0.4 }}
             onClick={next}
             disabled={!canContinue}
           >
-            Continue →
+            {t('continue')}
           </button>
         </div>
       </div>

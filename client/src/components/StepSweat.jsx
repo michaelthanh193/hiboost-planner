@@ -24,12 +24,12 @@ export default function StepSweat({ form, update, back, next }) {
     { id: 'very_high', labelKey: 'salt_very_high', descKey: 'salt_very_high_desc' },
   ];
   const TEMP_OPTIONS = [
-    { id: 'cold',     icon: '🧊',   label: '< 10°C',   desc: 'Very cold' },
-    { id: 'cool',     icon: '🌤',   label: '10–15°C',  desc: 'Cool' },
-    { id: 'mild',     icon: '☀️',   label: '15–20°C',  desc: 'Mild' },
-    { id: 'warm',     icon: '🌡',   label: '20–25°C',  desc: 'Warm' },
-    { id: 'hot',      icon: '🔥',   label: '25–30°C',  desc: 'Hot' },
-    { id: 'very_hot', icon: '☀️🔥', label: '> 30°C',   desc: 'Very hot' },
+    { id: 'cold',     icon: '🧊',   label: t('temp_cold'),   desc: t('desc_cold') },
+    { id: 'cool',     icon: '🌤',   label: t('temp_cool'),   desc: t('desc_cool') },
+    { id: 'mild',     icon: '☀️',   label: t('temp_mild'),   desc: t('desc_mild') },
+    { id: 'warm',     icon: '🌡',   label: t('temp_warm'),   desc: t('desc_warm') },
+    { id: 'hot',      icon: '🔥',   label: t('temp_hot'),    desc: t('desc_hot') },
+    { id: 'very_hot', icon: '☀️🔥', label: t('temp_very_hot'),desc: t('desc_very_hot') },
   ];
 
   return (
@@ -76,7 +76,7 @@ export default function StepSweat({ form, update, back, next }) {
               {form.sweatRateMlHr && form.sweatSodiumMgL && (
                 <div style={{ ...styles.testPreview, gridColumn: '1 / -1' }}>
                   <span>✅</span>
-                  <span>Your plan will use <strong>{form.sweatRateMlHr} ml/hr</strong> sweat rate and <strong>{form.sweatSodiumMgL} mg/L</strong> sodium.</span>
+                  <span>{t('sweat_test_success_1')} <strong>{form.sweatRateMlHr}</strong> {t('sweat_test_success_2')} <strong>{form.sweatSodiumMgL}</strong> {t('sweat_test_success_3')}</span>
                 </div>
               )}
             </div>

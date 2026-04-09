@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLang } from '../LangContext';
 
 const DEFAULT_SPLITS = {
   // Super Sprint
@@ -50,6 +51,7 @@ function fmtMins(m) {
 }
 
 export default function StepSplits({ form, update, next, back }) {
+  const { t } = useLang();
   const [targetH, setTargetH] = useState(Math.floor(parseFloat(form.durationHrs || 0)));
   const [targetM, setTargetM] = useState(Math.round((parseFloat(form.durationHrs || 0) % 1) * 60));
 
@@ -76,23 +78,23 @@ export default function StepSplits({ form, update, next, back }) {
 
   const statusColor = Math.abs(diff) <= 5 ? '#16a34a' : diff > 0 ? '#dc2626' : '#d97706';
   const statusMsg =
-    Math.abs(diff) <= 5 ? '✅ Perfectly matched to your race time!' :
-    diff > 0 ? `⚠️ ${diff} min over your target` :
-               `⚠️ ${Math.abs(diff)} min under your target`;
+    Math.abs(diff) <= 5 ? t('splits_ok') :
+    diff > 0 ? `⚠️ ${diff} ${t('splits_over')}` :
+               `⚠️ ${Math.abs(diff)} ${t('splits_under')}`;
 
   const pct = totalMins > 0 ? Math.min((splitsTotal / totalMins) * 100, 100) : 0;
 
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h1 style={styles.title}>Race Split Times</h1>
-        <p style={styles.subtitle}>Enter your target finish time, then adjust each segment split.</p>
+        <h1 style={styles.title}>{t('splits_title')}</h1>
+        <p style={styles.subtitle}>{t('splits_subtitle')}</p>
 
         {/* ── Target Total Input ── */}
         <div style={styles.targetBox}>
           <div style={styles.targetLabel}>
             <span style={styles.targetIcon}>🎯</span>
-            <span style={styles.targetText}>Your target finish time</span>
+            <span style={styles.targetText}>{t('splits_target')}</span>
             <span style={styles.targetEvent}>({form.eventName})</span>
           </div>
           <div style={styles.timeInputRow}>
@@ -117,7 +119,7 @@ export default function StepSplits({ form, update, next, back }) {
               />
               <span style={styles.timeUnit}>min</span>
             </div>
-            <div style={styles.totalDisplay}>{fmtMins(totalMins)} total</div>
+            <div style={styles.totalDisplay}>{fmtMins(totalMins)} {t('results_total')}</div>
           </div>
         </div>
 
@@ -152,7 +154,7 @@ export default function StepSplits({ form, update, next, back }) {
         {/* ── Total vs Target ── */}
         <div style={{ ...styles.totalBox, borderColor: statusColor + '40' }}>
           <div style={styles.totalRow}>
-            <span style={styles.totalLabel}>Splits total</span>
+            <span style={styles.totalLabel}>{t('splits_total')}</span>
             <span style={{ ...styles.totalVal, color: statusColor }}>{fmtMins(splitsTotal)}</span>
           </div>
           <div style={styles.progressBg}>
@@ -176,8 +178,8 @@ export default function StepSplits({ form, update, next, back }) {
         </div>
 
         <div style={styles.navRow}>
-          <button style={styles.backBtn} onClick={back}>← Back</button>
-          <button style={styles.nextBtn} onClick={next}>Continue →</button>
+          <button style={styles.backBtn} onClick={back}>{t('back')}</button>
+          <button style={styles.nextBtn} onClick={next}>{t('continue')}</button>
         </div>
       </div>
 
