@@ -219,6 +219,13 @@ export const translations = {
     usage_salt_caps:    'Take 1–2 caps with water every 30–45 min.',
     usage_maurten_gel:  'Premium gel option. Take 1 every {interval} min.',
 
+    // Splits
+    split_swim: 'Swim',
+    split_t1:   'T1 (Transition)',
+    split_bike: 'Bike',
+    split_t2:   'T2 (Transition)',
+    split_run:  'Run',
+
     // Tips keys from nutrition engine
     tip_female_fat_ox: 'Female athletes: oestrogen promotes fat oxidation — you may tolerate slightly lower carb intake than male athletes at same intensity.',
     tip_female_cycle: 'Hormonal cycle can affect heat tolerance and fluid retention. Track your training nutrition across your cycle.',
@@ -458,6 +465,13 @@ export const translations = {
     usage_pf90:         'Túi 90g Carbs cho đạp xe. 1 túi dùng trong ~1.5 giờ ở mức 60g/h.',
     usage_salt_caps:    'Uống 1–2 viên kèm nước mỗi 30–45 phút.',
     usage_maurten_gel:  'Dòng Gel Hydrogel cao cấp. Dùng 1 gói mỗi {interval} phút.',
+
+    // Splits
+    split_swim: 'Bơi',
+    split_t1:   'T1 (Chuyển tiếp)',
+    split_bike: 'Đạp xe',
+    split_t2:   'T2 (Chuyển tiếp)',
+    split_run:  'Chạy bộ',
 
     // Tips keys from nutrition engine
     tip_female_fat_ox: 'VĐV Nữ: hormone oestrogen thúc đẩy quá trình đốt mỡ — bạn có thể dung nạp lượng carb thấp hơn một chút so với VĐV nam ở cùng cường độ.',

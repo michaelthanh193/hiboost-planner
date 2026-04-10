@@ -36,11 +36,11 @@ function getDefaultSplits(eventName, totalMins) {
 }
 
 const SEGMENTS = [
-  { key: 'swim', icon: '🏊', label: 'Swim', color: '#3b82f6', min: 5, max: 120, step: 1 },
-  { key: 't1', icon: '👟', label: 'T1 (Transition)', color: '#8b5cf6', min: 1, max: 20, step: 1 },
-  { key: 'bike', icon: '🚴', label: 'Bike', color: '#f97316', min: 10, max: 600, step: 5 },
-  { key: 't2', icon: '👟', label: 'T2 (Transition)', color: '#8b5cf6', min: 1, max: 20, step: 1 },
-  { key: 'run', icon: '🏃', label: 'Run', color: '#16a34a', min: 5, max: 300, step: 1 },
+  { key: 'swim', icon: '🏊', labelKey: 'split_swim', color: '#3b82f6', min: 5, max: 120, step: 1 },
+  { key: 't1', icon: '👟', labelKey: 'split_t1', color: '#8b5cf6', min: 1, max: 20, step: 1 },
+  { key: 'bike', icon: '🚴', labelKey: 'split_bike', color: '#f97316', min: 10, max: 600, step: 5 },
+  { key: 't2', icon: '👟', labelKey: 'split_t2', color: '#8b5cf6', min: 1, max: 20, step: 1 },
+  { key: 'run', icon: '🏃', labelKey: 'split_run', color: '#16a34a', min: 5, max: 300, step: 1 },
 ];
 
 function fmtMins(m) {
@@ -137,7 +137,7 @@ export default function StepSplits({ form, update, next, back }) {
             <div key={seg.key} style={styles.segmentRow}>
               <div style={styles.segHeader}>
                 <span style={styles.segIcon}>{seg.icon}</span>
-                <span style={styles.segLabel}>{seg.label}</span>
+                <span style={styles.segLabel}>{t(seg.labelKey)}</span>
                 <span style={{ ...styles.segTime, color: seg.color }}>
                   {fmtMins(splits[seg.key] ?? 0)}
                 </span>
@@ -191,7 +191,7 @@ export default function StepSplits({ form, update, next, back }) {
               <div key={seg.key} style={styles.breakdownItem}>
                 <div style={{ ...styles.breakdownBar, background: seg.color, height: `${Math.max(segPct, 3)}%` }} />
                 <span style={styles.breakdownPct}>{segPct}%</span>
-                <span style={styles.breakdownKey}>{seg.label.split(' ')[0]}</span>
+                <span style={styles.breakdownKey}>{t(seg.labelKey).split(' ')[0]}</span>
               </div>
             );
           })}
