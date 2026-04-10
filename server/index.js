@@ -62,6 +62,14 @@ app.get('/api/products', (req, res) => {
   res.json(HIBOOST_PRODUCTS);
 });
 
+/**
+ * Route /api/lead handling for local dev
+ */
+app.all('/api/lead', async (req, res) => {
+  const leadHandler = require('../api/lead');
+  await leadHandler(req, res);
+});
+
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', service: 'HiBoost Nutrition API' }));
 

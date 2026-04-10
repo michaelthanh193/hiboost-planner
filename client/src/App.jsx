@@ -14,8 +14,8 @@ const TRI_STEPS_KEYS  = ['stepSport', 'stepEvent', 'stepSplits', 'stepBody', 'st
 const initialForm = {
   sport: '', eventName: '', durationHrs: '', distanceKm: '',
   bodyWeightKg: '', gender: '', age: '',
-  experience: 'intermediate', sweatLevel: 'medium', saltiness: 'medium', temperature: 'warm',
-  sweatRateMlHr: '', sweatSodiumMgL: '', splits: null,
+  sweatLevel: 'medium', saltiness: 'medium', temperature: 'warm',
+  sweatRateMlHr: '', sweatSodiumMgL: '', splits: null, fuelPreference: 'mixed',
   firstName: '', lastName: '', email: '', phone: '',
 };
 
@@ -60,6 +60,7 @@ export default function App() {
           sweatRateMlHr: form.sweatRateMlHr ? parseFloat(form.sweatRateMlHr) : null,
           sweatSodiumMgL: form.sweatSodiumMgL ? parseFloat(form.sweatSodiumMgL) : null,
           experience: form.experience, splits: form.splits || null,
+          fuelPreference: form.fuelPreference || 'mixed',
         }),
       });
 

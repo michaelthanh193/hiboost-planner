@@ -210,7 +210,15 @@ export default function StepEvent({ form, update, next, back }) {
                     onClick={() => selectEvent(evt)}
                     style={{ ...styles.eventBtn, ...(selected ? styles.eventActive : {}) }}
                   >
-                    <div style={styles.eventName}>{evt.label}</div>
+                    <div style={styles.eventName}>
+                      {evt.label}
+                      <span style={{
+                        marginLeft: 8, fontSize: 10, padding: '2px 6px', borderRadius: 4,
+                        background: evt.id.includes('advanced') ? '#ea580c' : '#e2e8f0', color: '#475569'
+                      }}>
+                         {evt.tiers && Object.keys(evt.tiers).length ? "All Levels" : "Pro"}
+                      </span>
+                    </div>
                     {evt.dist && <div style={styles.eventDist}>{evt.dist}</div>}
                   </button>
                 );

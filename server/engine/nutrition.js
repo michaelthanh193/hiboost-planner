@@ -117,6 +117,7 @@ function calculatePlan(input) {
     sweatSodiumMgL = null,  // from sweat test — overrides saltiness estimate when provided
     experience = 'intermediate',
     splits = null,
+    fuelPreference = 'mixed',
   } = input;
 
   const sportData = SPORTS[sport] || SPORTS.other;
@@ -137,14 +138,23 @@ function calculatePlan(input) {
     sweatRatePerHr = Math.round(baseSweatRate * (1 + tempAdj));
   }
 
-  // Recommended fluid: replace 70–80% of sweat losses (avoid over-drinking)
-  const fluidPerHr = Math.round(sweatRatePerHr * 0.75);
+  // Recommended fluid: replace 70–80% of sweat losses (max 1L/h usually)
+  let fluidPerHr = Math.round(sweatRatePerHr * 0.75);
+  // Cap global fluid intake (human gut limit is typically ~900-1200ml/hr)
+  if (fluidPerHr > 1200) fluidPerHr = 1200;
+  // Task 2.3: Hard fluid cap for running (sloshing prevention)
+  if (sport === 'running' && fluidPerHr > 800) {
+    fluidPerHr = 800;
+  }
 
   // ── Sodium ──
-  // If user has measured sodium concentration from sweat test, use it; otherwise estimate from saltiness
+  // Target sodium INTAKE should match the concentration of the fluid you *actually drink*, 
+  // not the total fluid you lost (otherwise you get absurdly high 4000mg targets).
   const hasSodiumTest = sweatSodiumMgL && sweatSodiumMgL > 0;
   const sodiumConc = hasSodiumTest ? sweatSodiumMgL : (SODIUM_CONCENTRATION[saltiness] || 900);
-  const sodiumPerHr = Math.round((sweatRatePerHr / 1000) * sodiumConc * (hasSodiumTest ? 1 : physio.sodiumMult));
+  
+  // Calculate target intake based on the fluid we prescribe (fluidPerHr/1000 -> Litres)
+  const sodiumPerHr = Math.round((fluidPerHr / 1000) * sodiumConc * (hasSodiumTest ? 1 : physio.sodiumMult));
 
   // ── Carbohydrates ──
   const carbsPerHr = Math.round(
@@ -168,6 +178,7 @@ function calculatePlan(input) {
     fluidPerHr,
     durationHrs,
     totalCarbs,
+    fuelPreference,
   });
 
   // ── Per-segment breakdown for triathlon ──
@@ -225,7 +236,10 @@ function buildSegmentBreakdown(splits, carbsPerHr, fluidPerHr, sodiumPerHr) {
     const cfg = SEGMENT_CONFIG[key] || { icon: '⚡', label: key, carbMultiplier: 1.0, note: '' };
     const hrs = durationMins / 60;
     const carbs  = key === 'swim' || key === 't1' || key === 't2' ? 0 : Math.round(carbsPerHr * cfg.carbMultiplier * hrs);
-    const fluid  = Math.round(fluidPerHr * hrs * (key === 'swim' ? 0 : 1));
+    
+    // Apply 800ml cap for running phase within triathlon to prevent sloshing
+    const localFluidHr = (key === 'run' && fluidPerHr > 800) ? 800 : fluidPerHr;
+    const fluid  = Math.round(localFluidHr * hrs * (key === 'swim' ? 0 : 1));
     const sodium = Math.round(sodiumPerHr * hrs * (key === 'swim' ? 0 : 1));
     return {
       segment: key,
@@ -355,13 +369,17 @@ function buildTriathlonTimeline(splits, carbsPerHr, fluidPerHr, sodiumPerHr) {
         const absMin = segStart + localMin;
         const isFirst = localMin === 0;
         const isLast  = localMin >= durationMins;
+        
+        // Fluid cap for running phase
+        const localFluidHr = (key === 'run' && fluidPerHr > 800) ? 800 : fluidPerHr;
+
         items.push({
           timeMin: absMin,
           label: isFirst ? `${c.label} Start`
                : isLast  ? `${c.label} End 🏁`
                : `+${localMin} min`,
           carbsG:   isFirst ? 0 : Math.round(carbsPerHr * c.carbMult * fraction),
-          fluidMl:  Math.round(fluidPerHr * fraction),
+          fluidMl:  Math.round(localFluidHr * fraction),
           sodiumMg: isFirst ? 0 : Math.round(sodiumPerHr * fraction),
           note: getSegmentNote(key, localMin, durationMins),
         });
@@ -582,14 +600,29 @@ const HIBOOST_PRODUCTS = [
   },
 ];
 
-function recommendProducts({ carbsPerHr, sodiumPerHr, fluidPerHr, durationHrs, totalCarbs }) {
+function recommendProducts({ carbsPerHr, sodiumPerHr, fluidPerHr, durationHrs, totalCarbs, fuelPreference = 'mixed' }) {
   const recs = [];
   const isLong = durationHrs >= 3;
   const isHighSodium = sodiumPerHr >= 700;
   const isHighCarb = carbsPerHr >= 60;
 
-  // ── 1. Primary Electrolyte Drink (always recommend for events ≥ 45min) ──
-  if (durationHrs >= 0.75) {
+  // 1. Primary Electrolyte Drink OR Maurten 320 for Mix/Liquid preference
+  let carbsFromLiquidPerHr = 0;
+  if ((fuelPreference === 'liquid' || fuelPreference === 'mixed') && carbsPerHr >= 50 && durationHrs >= 1.5) {
+    const sachetPerHr = fuelPreference === 'liquid' ? (carbsPerHr / 80) : (carbsPerHr / 2 / 80);
+    const totalSachets = Math.ceil(sachetPerHr * durationHrs);
+    if (totalSachets > 0) {
+       recs.push({
+         ...HIBOOST_PRODUCTS.find(p => p.id === 'maurten-320'),
+         quantity: totalSachets,
+         usage: `Pha 1 gói (80g carbs) vào 500ml. Uống từ từ mỗi 15 phút. Nguồn hydrogel hạn chế tức bụng.`,
+       });
+       carbsFromLiquidPerHr = sachetPerHr * 80;
+    }
+  }
+
+  // 1b. If Maurten doesn't provide enough sodium or they prefer gels, use PH Hydration Mix
+  if (durationHrs >= 0.75 && (carbsFromLiquidPerHr === 0 || sodiumPerHr > 500)) {
     // Pick PH strength by sodium need
     let electrolyteDrink;
     if (isHighSodium) {
@@ -599,24 +632,25 @@ function recommendProducts({ carbsPerHr, sodiumPerHr, fluidPerHr, durationHrs, t
     } else {
       electrolyteDrink = HIBOOST_PRODUCTS.find(p => p.id === 'ph-sweat-500');
     }
-    const bottlesNeeded = Math.max(1, Math.ceil(durationHrs / 1.25));
+    const bottlesNeeded = Math.max(1, Math.ceil(durationHrs / 1.5));
     recs.push({
       ...electrolyteDrink,
       quantity: bottlesNeeded,
-      usage: `Mix 1 sachet per 500ml bottle. Sip every 15–20 min throughout.`,
+      usage: `Pha 1 gói cho 500ml nước. Cấp nước và điện giải liên tục.`,
     });
   }
 
-  // ── 2. Carb Gels (for events ≥ 1h with carb targets) ──
-  if (carbsPerHr >= 20 && durationHrs >= 0.75) {
+  // ── 2. Carb Gels (Cover the missing carbs after liquid) ──
+  const missingCarbsPerHr = carbsPerHr - carbsFromLiquidPerHr;
+  if (missingCarbsPerHr >= 15 && durationHrs >= 0.75) {
     const gel = HIBOOST_PRODUCTS.find(p => p.id === 'ph-gel');
-    const gelsPerHr = carbsPerHr / 30;
+    const gelsPerHr = missingCarbsPerHr / 30;
     const totalGels = Math.ceil(gelsPerHr * durationHrs);
     const interval = Math.round(60 / gelsPerHr);
     recs.push({
       ...gel,
       quantity: totalGels,
-      usage: `Take 1 gel every ${interval} min. Start at 20–30 min into the race.`,
+      usage: `Ăn 1 gel mỗi ${interval} phút. Không nạp cùng lúc với lúc uống Maurten 320.`,
     });
   }
 
@@ -648,15 +682,6 @@ function recommendProducts({ carbsPerHr, sodiumPerHr, fluidPerHr, durationHrs, t
       ...caps,
       quantity: capsNeeded,
       usage: `Take 1–2 caps with water every 30–45 min.`,
-    });
-  }
-
-  // ── 6. Maurten Drink Mix 320 (premium option for 3h+ high-carb athletes) ──
-  if (durationHrs >= 3 && carbsPerHr >= 50) {
-    recs.push({
-      ...HIBOOST_PRODUCTS.find(p => p.id === 'maurten-320'),
-      quantity: Math.ceil(durationHrs / 1.5),
-      usage: `Alternative to PF 90. Hydrogel formula — gentler on the gut at high carb rates.`,
     });
   }
 
@@ -698,43 +723,43 @@ function generateTips({ carbsPerHr, sodiumPerHr, durationHrs, experience, temper
 
   // Gender-specific tips
   if (gender === 'female') {
-    tips.push('Female athletes: oestrogen promotes fat oxidation — you may tolerate slightly lower carb intake than male athletes at same intensity.');
-    if (durationHrs >= 2) tips.push('Hormonal cycle can affect heat tolerance and fluid retention. Track your training nutrition across your cycle.');
+    tips.push('tip_female_fat_ox');
+    if (durationHrs >= 2) tips.push('tip_female_cycle');
   }
 
   // Age-specific tips
   if (ageGroup === 'youth') {
-    tips.push('Youth athlete: your body needs more carbs relative to weight. Do not under-fuel — growth and recovery depend on adequate energy.');
+    tips.push('tip_youth_growth');
   } else if (ageGroup === 'masters') {
-    tips.push('Masters athlete (35–49): prioritise recovery nutrition with protein within 30 min of finishing. Carb absorption is similar but recovery is slower.');
+    tips.push('tip_masters_recovery');
   } else if (ageGroup === 'senior') {
-    tips.push('50+ athlete: electrolytes become more critical — kidneys are less efficient at retaining sodium. Do not skip salt capsules.');
-    tips.push('Protein intake post-race is more important than for younger athletes. Aim for 30–40g protein within 1 hour of finishing.');
+    tips.push('tip_senior_electrolytes');
+    tips.push('tip_senior_protein');
   }
 
   if (carbsPerHr === 0) {
-    tips.push('Short effort under 45 min — water is sufficient. No carbs needed.');
+    tips.push('tip_short_effort');
   } else if (carbsPerHr >= 75) {
-    tips.push('High carb target: train your gut in long training sessions before race day to avoid GI issues.');
-    tips.push('Use multiple carb sources (glucose + fructose) for better absorption above 60g/hr.');
+    tips.push('tip_high_carb_gut');
+    tips.push('tip_high_carb_mix');
   }
 
   if (sodiumPerHr >= 700) {
-    tips.push('High sodium target: you\'re a salty sweater. Do not skip electrolytes even in shorter efforts.');
+    tips.push('tip_salty_sweater');
   }
 
   if (['hot', 'very_hot'].includes(temperature)) {
-    tips.push('Hot conditions: start hydrating 2hrs before the race with 500ml water + electrolytes.');
-    tips.push('Pre-cooling strategies (ice vest, cold drink) can improve performance in heat.');
+    tips.push('tip_hot_conditions');
+    tips.push('tip_pre_cooling');
   }
 
   if (durationHrs >= 3) {
-    tips.push('For events 3+ hours: carb-load the 2 days before to maximize glycogen stores.');
-    tips.push('Practice your full race nutrition plan in at least 2 long training sessions.');
+    tips.push('tip_carb_load');
+    tips.push('tip_practice_full');
   }
 
   if (experience === 'beginner') {
-    tips.push('New to race nutrition? Start conservative — try half the carb target first, then increase.');
+    tips.push('tip_beginner_conservative');
   }
 
   return tips;

@@ -85,13 +85,30 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ error: 'Notion not configured' });
     }
 
-    const { firstName, lastName, email, phone, sport, eventName, durationHrs } = req.body || {};
+    const { firstName, lastName, email, phone, sport, eventName, durationHrs, orderText } = req.body || {};
 
     if (!firstName || !lastName || !email) {
       return res.status(400).json({ error: 'firstName, lastName, email are required' });
     }
 
     const fullName = `${lastName?.trim()} ${firstName?.trim()}`;
+
+    // Optional blocks containing the order summary
+    let childrenBlocks = [];
+    if (orderText) {
+      childrenBlocks = [
+        {
+          object: 'block',
+          type: 'heading_2',
+          heading_2: { rich_text: [{ type: 'text', text: { content: 'Yêu Cầu Mua Y Phục / Dinh Dưỡng' } }] },
+        },
+        {
+          object: 'block',
+          type: 'paragraph',
+          paragraph: { rich_text: [{ type: 'text', text: { content: orderText } }] },
+        }
+      ];
+    }
 
     const page = {
       parent: { database_id: NOTION_DATABASE_ID },
@@ -115,6 +132,7 @@ module.exports = async function handler(req, res) {
           rich_text: [{ text: { content: fmtHrs(durationHrs) } }],
         },
       },
+      children: childrenBlocks.length > 0 ? childrenBlocks : undefined,
     };
 
     const result = await notionRequest('POST', '/v1/pages', page);

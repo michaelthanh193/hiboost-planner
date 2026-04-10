@@ -98,14 +98,22 @@ export default function StepContact({ form, update, back, submit, loading, error
         <div style={styles.navRow}>
           <button style={styles.backBtn} onClick={back} disabled={loading}>{t('back')}</button>
           <button
-            style={{ ...styles.submitBtn, opacity: canSubmit ? 1 : 0.5 }}
+            style={{ ...styles.submitBtn, opacity: canSubmit ? 1 : 0.6, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px' }}
             onClick={handleSubmit}
             disabled={!canSubmit}
           >
-            {loading ? t('contact_loading') : t('contact_submit')}
+            {loading && (
+              <svg viewBox="0 0 50 50" style={{ width: 20, height: 20, animation: 'spin 1s linear infinite' }}>
+                <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" strokeDasharray="80, 150" />
+              </svg>
+            )}
+            <span>{loading ? t('contact_loading') : t('contact_submit')}</span>
           </button>
         </div>
       </div>
+      <style>{`
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }

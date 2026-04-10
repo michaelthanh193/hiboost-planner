@@ -105,6 +105,8 @@ export default function StepSweat({ form, update, back, next }) {
           </div>
         </Section>
 
+
+
         {/* Temperature */}
         <Section label={t('sweat_temp_q')}>
           <div className="temp-grid">
@@ -116,6 +118,18 @@ export default function StepSweat({ form, update, back, next }) {
                 <span style={styles.tempDesc}>{o.desc}</span>
               </button>
             ))}
+          </div>
+        </Section>
+
+        {/* Task 2.1: Fuel Preference (Mix vs Gel) - Moved Below Temperature */}
+        <Section label={t('sweat_fuel_q')}>
+          <div className="option-grid" style={styles.optionGrid}>
+            <OptionBtn icon="🍬" label={t('fuel_gel_label')} desc={t('fuel_gel_desc')} 
+              selected={form.fuelPreference === 'gels'} onSelect={() => update({ fuelPreference: 'gels' })} />
+            <OptionBtn icon="🍬💧" label={t('fuel_mix_label')} desc={t('fuel_mix_desc')} 
+              selected={(form.fuelPreference || 'mixed') === 'mixed'} onSelect={() => update({ fuelPreference: 'mixed' })} />
+            <OptionBtn icon="💧" label={t('fuel_liquid_label')} desc={t('fuel_liquid_desc')} 
+              selected={form.fuelPreference === 'liquid'} onSelect={() => update({ fuelPreference: 'liquid' })} />
           </div>
         </Section>
 

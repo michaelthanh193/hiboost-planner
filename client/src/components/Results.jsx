@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useLang } from '../LangContext';
+import { toPng } from 'html-to-image';
 
 function fmtHrs(h) {
   if (!h || h <= 0) return '—';
@@ -11,7 +12,79 @@ function fmtHrs(h) {
 
 export default function Results({ plan, form, restart }) {
   const { t } = useLang();
-  const { perHour, totals, timeline, products, tips, sweatRatePerHr, meta, segmentBreakdown } = plan;
+  const cheatSheetRef = useRef(null);
+  const [downloading, setDownloading] = useState(false);
+
+  const downloadCheatSheet = async () => {
+    if (!cheatSheetRef.current) return;
+    setDownloading(true);
+    try {
+      const dataUrl = await toPng(cheatSheetRef.current, { cacheBust: true, backgroundColor: '#ffffff', pixelRatio: 3 });
+      const link = document.createElement('a');
+      link.download = `HiBoost_CheatSheet_${form.eventName || 'Race'}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Failed to generate cheat sheet', err);
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const { perHour, totals, timeline, products: initialProducts, tips, sweatRatePerHr, meta, segmentBreakdown } = plan;
+  
+  // Phase 4: E-commerce tracking & Shopping Cart
+  const [cartItems, setCartItems] = useState(initialProducts);
+  useEffect(() => {
+    setCartItems(initialProducts);
+  }, [initialProducts]);
+
+  const updateCart = (index, delta) => {
+    const newCart = [...cartItems];
+    let newQty = newCart[index].quantity + delta;
+    if (newQty < 0) newQty = 0;
+    newCart[index].quantity = newQty;
+    setCartItems(newCart);
+  };
+
+  const [ordering, setOrdering] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const totalPriceVND = cartItems.reduce((sum, p) => sum + (p.priceVND || 0) * p.quantity, 0);
+
+  const submitOrder = async () => {
+    setOrdering(true);
+    setOrderSuccess(false);
+
+    const orderedItems = cartItems.filter(p => p.quantity > 0);
+    const orderLines = orderedItems.map(p => `- ${p.quantity}x ${p.name} (${((p.priceVND || 0) * p.quantity).toLocaleString()} VND)`).join('\n');
+    const orderText = orderedItems.length > 0 
+      ? `Danh sách sản phẩm:\n${orderLines}\n=> Tổng tiền: ${totalPriceVND.toLocaleString()} VND`
+      : 'Khách hàng không đặt mua sản phẩm nào.';
+
+    try {
+      const res = await fetch('/api/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          phone: form.phone,
+          sport: form.sport,
+          eventName: form.eventName,
+          durationHrs: form.durationHrs,
+          orderText: orderText
+        })
+      });
+      if (!res.ok) throw new Error('Order failed');
+      setOrderSuccess(true);
+    } catch (e) {
+      alert('Không thể gửi đơn hàng. Vui lòng kiểm tra lại trạng thái mạng.');
+      console.error(e);
+    } finally {
+      setOrdering(false);
+    }
+  };
 
   return (
     <div style={styles.container}>
@@ -41,6 +114,21 @@ export default function Results({ plan, form, restart }) {
               🧪 {meta.sweatRateMlHr && `${meta.sweatRateMlHr} ml/h`}{meta.sweatSodiumMgL && ` · ${meta.sweatSodiumMgL} mg/L`}
             </span>
           )}
+        </div>
+      )}
+
+      {/* Task 2.2: Sodium Alert for Extreme Sodum Loss */}
+      {perHour.sodiumMg > 1000 && (
+        <div style={{
+          background: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 10,
+          padding: '12px 16px', marginBottom: 20, fontSize: 13, color: '#92400e', lineHeight: 1.5,
+          display: 'flex', gap: 10, alignItems: 'flex-start'
+        }}>
+          <span style={{ fontSize: 18, flexShrink: 0 }}>⚠️</span>
+          <span>
+            <strong style={{ display: 'block', marginBottom: 2 }}>{t('results_high_sodium_title') || 'Cảnh Báo Lượng Muối:'}</strong>
+            {t('results_high_sodium_desc') || 'Lượng sụt giảm Sodium dự đoán ban đầu của bạn rất cao (>1500mg/h). Việc uống một lượng nước quá mặn liên tục trong nhiều giờ có thể gây rối loạn tiêu hoá. Hãy chủ động train dạ dày trong các phần tập dài, hoặc kết hợp dùng nước uống điện giải cùng muối viên (Salt caps) để cân bằng vị giác.'}
+          </span>
         </div>
       )}
 
@@ -156,19 +244,155 @@ export default function Results({ plan, form, restart }) {
           </div>
         </div>
 
+        {/* Phase 3: Strategy Sticker Download Section */}
+        {(() => {
+          const bikeSection = timeline.find(s => s.segment === 'bike');
+          if (!bikeSection) return null; // Strategy Sticker only for Bike section!
+
+          return (
+            <div style={{ ...styles.section, marginTop: 30 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <div>
+                  <h2 style={{ ...styles.sectionTitle, color: '#2563eb' }}>🚴‍♂️ Strategy Sticker</h2>
+                  <p style={styles.sectionDesc}>Tải ảnh Tóm tắt nhanh Kế hoạch nạp để dán lên Ghi-đông (Top Tube) khi đi thi đấu.</p>
+                </div>
+                <button 
+                  onClick={downloadCheatSheet} 
+                  disabled={downloading}
+                  style={{
+                    backgroundColor: downloading ? '#94a3b8' : '#2563eb', color: '#fff', border: 'none', 
+                    padding: '10px 16px', borderRadius: 8, fontWeight: 600, cursor: 'pointer', transition: '0.2s',
+                    display: 'flex', alignItems: 'center', gap: 8
+                  }}
+                >
+                  {downloading ? '⏳ Đang tạo ảnh...' : '⬇️ Tải file PNG'}
+                </button>
+              </div>
+              
+              {/* Render Area for HTML to Image */}
+              <div style={{ padding: 20, background: '#f8fafc', borderRadius: 12, border: '1px dashed #cbd5e1', overflowX: 'auto', display: 'flex', justifyContent: 'center' }}>
+                <div ref={cheatSheetRef} style={{
+                  width: '180px', background: '#fff', border: '1px solid #e2e8f0',
+                  padding: '4px', margin: '0 auto', fontFamily: 'Arial, sans-serif',
+                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                }}>
+                  {/* Top Header */}
+                  <div style={{ color: '#9f1239', fontSize: 12, fontWeight: 'bold', padding: '2px 4px 6px 4px', textTransform: 'uppercase' }}>
+                    {form.firstName ? `${form.lastName} ${form.firstName}` : 'RACE STRATEGY'}
+                  </div>
+
+                  <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #94a3b8' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ border: '1px solid #94a3b8', padding: '4px', fontSize: 10, color: '#475569', textAlign: 'center', width: '35%' }}>TIME</th>
+                        <th style={{ border: '1px solid #94a3b8', padding: '4px', fontSize: 10, color: '#475569', textAlign: 'center', width: '65%' }}>NUTRITION</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bikeSection.items.map((pt, i) => {
+                        if (pt.carbsG === 0 && pt.fluidMl === 0) return null;
+                        if (pt.label.includes('End') || pt.label.includes('Finish')) return null;
+
+                        // Time parsing for clean format
+                        let timeStr = pt.label.replace(/\+/g, '').replace(/min/g, '').trim();
+                        if (pt.label.includes('Start')) timeStr = '0';
+                        
+                        let timeNum = parseInt(timeStr);
+                        let displayTime = pt.label;
+                        if (!isNaN(timeNum)) {
+                          if (timeNum === 0) displayTime = `0'`;
+                          else if (timeNum % 60 === 0) displayTime = `${timeNum/60}h`;
+                          else if (timeNum > 60) displayTime = `${Math.floor(timeNum/60)}h${timeNum%60}`;
+                          else displayTime = `${timeNum}'`;
+                        }
+
+                        const isFluid = pt.fluidMl > 0;
+                        const isCarb = pt.carbsG > 0;
+
+                        return (
+                          <tr key={i}>
+                            <td style={{ border: '1px solid #94a3b8', padding: '4px', fontSize: 12, color: '#881337', textAlign: 'center' }}>
+                              {displayTime}
+                            </td>
+                            <td style={{ border: '1px solid #94a3b8', padding: '4px', textAlign: 'center', verticalAlign: 'middle' }}>
+                              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, minHeight: '32px' }}>
+                                {isFluid && (
+                                  <img 
+                                    src="/images/products/PF&H_Cartoon%20Product_images/PFH%20500ml%20bottle.png" 
+                                    alt="fluid" 
+                                    style={{ height: '32px' }} 
+                                  />
+                                )}
+                                {isCarb && (
+                                  <img 
+                                    src="/images/products/PF&H_Cartoon%20Product_images/PF30%20gel.png" 
+                                    alt="carb" 
+                                    style={{ height: '32px', borderRadius: 4 }} 
+                                  />
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      <tr>
+                        <td colSpan={2} style={{ background: '#f43f5e', color: '#fff', fontSize: 12, fontWeight: 'bold', textAlign: 'center', padding: '6px' }}>
+                          FINISH ({fmtHrs(segmentBreakdown?.bike?.durationHrs ?? form.durationHrs)})
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Right column */}
         <div>
           {/* Product Recommendations */}
           <div style={styles.section}>
             <h2 style={styles.sectionTitle}>{t('results_products')}</h2>
             <p style={styles.sectionDesc}>{t('results_products_sub')}</p>
-            {products.length === 0 ? (
+            {cartItems.length === 0 ? (
               <p style={{ color: '#6b7280', fontSize: 14 }}>{t('results_no_products')}</p>
             ) : (
               <div style={styles.productList}>
-                {products.map((p, i) => (
-                  <ProductCard key={i} product={p} t={t} />
+                {cartItems.map((p, i) => (
+                  <ProductCard 
+                    key={i} 
+                    product={p} 
+                    t={t} 
+                    onPlus={() => updateCart(i, 1)}
+                    onMinus={() => updateCart(i, -1)}
+                  />
                 ))}
+
+                {/* Calculate Total Order */}
+                <div style={{ marginTop: 15, borderTop: '2px solid #e2e8f0', paddingTop: 20 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: '#334155' }}>Tổng tiền tạm tính:</span>
+                    <span style={{ fontSize: 20, fontWeight: 800, color: '#16a34a' }}>{totalPriceVND.toLocaleString()} VND</span>
+                  </div>
+                  <button 
+                    onClick={submitOrder}
+                    disabled={ordering || cartItems.every(p => p.quantity === 0)}
+                    style={{
+                      width: '100%', background: (ordering || cartItems.every(p => p.quantity === 0)) ? '#94a3b8' : '#f97316', color: '#fff', 
+                      padding: '14px', borderRadius: 8, fontSize: 15, fontWeight: 700, border: 'none', 
+                      cursor: (ordering || cartItems.every(p => p.quantity === 0)) ? 'not-allowed' : 'pointer',
+                      transition: '0.2s',
+                    }}>
+                    {ordering ? '⏳ Đang gửi yêu cầu...' : '🛒 Yêu Cầu Đặt Hàng & Tư Vấn'}
+                  </button>
+                  {orderSuccess && (
+                     <div style={{ background: '#ecfdf5', border: '1px solid #10b981', padding: '10px', borderRadius: 6, marginTop: 12 }}>
+                       <p style={{ color: '#047857', textAlign: 'center', margin: 0, fontWeight: 600, fontSize: 13 }}>
+                         ✅ Yêu cầu đã được gửi lên hệ thống Hiboost CRM. Nhân viên chúng tôi sẽ gọi điện xác nhận ưu đãi và lên đơn cho bạn!
+                       </p>
+                     </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -181,7 +405,7 @@ export default function Results({ plan, form, restart }) {
                 {tips.map((tip, i) => (
                   <li key={i} style={styles.tipItem}>
                     <span style={styles.tipBullet}>→</span>
-                    <span>{tip}</span>
+                    <span>{t(tip) || tip}</span>
                   </li>
                 ))}
               </ul>
@@ -227,7 +451,7 @@ function Pill({ color, children }) {
   );
 }
 
-function ProductCard({ product, t }) {
+function ProductCard({ product, t, onPlus, onMinus }) {
   const [showNutrition, setShowNutrition] = useState(false);
   const nf = product.nutrition || {};
 
@@ -245,7 +469,13 @@ function ProductCard({ product, t }) {
             {product.brand && <span style={styles.productBrand}> · {product.brand}</span>}
           </p>
         </div>
-        <div style={styles.productQty}>×{product.quantity}</div>
+        
+        {/* Quantity Controller */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 6, padding: '2px' }}>
+          <button onClick={onMinus} style={{ border: 'none', background: '#f1f5f9', cursor: 'pointer', padding: '4px 10px', fontSize: 16, borderRadius: 4, color: '#475569', fontWeight: 'bold' }}>-</button>
+          <div style={{ fontSize: 14, fontWeight: 700, width: 20, textAlign: 'center', color: '#0f172a' }}>{product.quantity}</div>
+          <button onClick={onPlus} style={{ border: 'none', background: '#f97316', cursor: 'pointer', padding: '4px 10px', fontSize: 16, borderRadius: 4, color: '#fff', fontWeight: 'bold' }}>+</button>
+        </div>
       </div>
 
       {/* Nutrition Facts tooltip — shown on hover */}

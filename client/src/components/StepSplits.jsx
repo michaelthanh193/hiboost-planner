@@ -3,44 +3,44 @@ import { useLang } from '../LangContext';
 
 const DEFAULT_SPLITS = {
   // Super Sprint
-  'Super Sprint':              { swim: 10, t1: 1,  bike: 25,  t2: 1,  run: 12  },
+  'Super Sprint': { swim: 10, t1: 1, bike: 25, t2: 1, run: 12 },
   // Sprint
-  'Sprint Triathlon':          { swim: 15, t1: 2,  bike: 40,  t2: 1,  run: 17  },
+  'Sprint Triathlon': { swim: 15, t1: 2, bike: 40, t2: 1, run: 17 },
   // Olympic (new label from catalog)
-  'Olympic / Standard':        { swim: 22, t1: 2,  bike: 70,  t2: 1,  run: 40  },
+  'Olympic / Standard': { swim: 22, t1: 2, bike: 70, t2: 1, run: 40 },
   // Legacy label fallback
-  'Olympic Triathlon':         { swim: 22, t1: 2,  bike: 70,  t2: 1,  run: 40  },
+  'Olympic Triathlon': { swim: 22, t1: 2, bike: 70, t2: 1, run: 40 },
   // Half Ironman (new label from catalog)
-  'Ironman 70.3':              { swim: 35, t1: 3,  bike: 160, t2: 2,  run: 100 },
+  'Ironman 70.3': { swim: 35, t1: 3, bike: 160, t2: 2, run: 100 },
   // Legacy label fallback
-  '70.3 Half Ironman':         { swim: 35, t1: 3,  bike: 160, t2: 2,  run: 100 },
+  '70.3 Half Ironman': { swim: 35, t1: 3, bike: 160, t2: 2, run: 100 },
   // Full Ironman (new label from catalog)
-  'Ironman 140.6':             { swim: 70, t1: 5,  bike: 340, t2: 3,  run: 182 },
+  'Ironman 140.6': { swim: 70, t1: 5, bike: 340, t2: 3, run: 182 },
   // Legacy label fallback
-  'Ironman':                   { swim: 70, t1: 5,  bike: 340, t2: 3,  run: 182 },
+  'Ironman': { swim: 70, t1: 5, bike: 340, t2: 3, run: 182 },
   // Long Course
-  'Long Course (226km)':       { swim: 75, t1: 5,  bike: 360, t2: 4,  run: 216 },
+  'Long Course (226km)': { swim: 75, t1: 5, bike: 360, t2: 4, run: 216 },
   // Double/Ultra
-  'Double / Ultra Tri':        { swim: 140,t1: 10, bike: 720, t2: 8,  run: 440 },
+  'Double / Ultra Tri': { swim: 140, t1: 10, bike: 720, t2: 8, run: 440 },
 };
 
 function getDefaultSplits(eventName, totalMins) {
   if (DEFAULT_SPLITS[eventName]) return DEFAULT_SPLITS[eventName];
   return {
     swim: Math.round(totalMins * 0.11),
-    t1:   Math.round(totalMins * 0.01),
+    t1: Math.round(totalMins * 0.01),
     bike: Math.round(totalMins * 0.53),
-    t2:   Math.round(totalMins * 0.01),
-    run:  Math.round(totalMins * 0.34),
+    t2: Math.round(totalMins * 0.01),
+    run: Math.round(totalMins * 0.34),
   };
 }
 
 const SEGMENTS = [
-  { key: 'swim', icon: '🏊', label: 'Swim',            color: '#3b82f6', min: 5,  max: 120, step: 1 },
-  { key: 't1',   icon: '👟', label: 'T1 (Transition)', color: '#8b5cf6', min: 1,  max: 20,  step: 1 },
-  { key: 'bike', icon: '🚴', label: 'Bike',             color: '#f97316', min: 10, max: 600, step: 5 },
-  { key: 't2',   icon: '👟', label: 'T2 (Transition)', color: '#8b5cf6', min: 1,  max: 20,  step: 1 },
-  { key: 'run',  icon: '🏃', label: 'Run',              color: '#16a34a', min: 5,  max: 300, step: 1 },
+  { key: 'swim', icon: '🏊', label: 'Swim', color: '#3b82f6', min: 5, max: 120, step: 1 },
+  { key: 't1', icon: '👟', label: 'T1 (Transition)', color: '#8b5cf6', min: 1, max: 20, step: 1 },
+  { key: 'bike', icon: '🚴', label: 'Bike', color: '#f97316', min: 10, max: 600, step: 5 },
+  { key: 't2', icon: '👟', label: 'T2 (Transition)', color: '#8b5cf6', min: 1, max: 20, step: 1 },
+  { key: 'run', icon: '🏃', label: 'Run', color: '#16a34a', min: 5, max: 300, step: 1 },
 ];
 
 function fmtMins(m) {
@@ -76,11 +76,19 @@ export default function StepSplits({ form, update, next, back }) {
   const splitsTotal = Object.values(splits).reduce((a, b) => a + b, 0);
   const diff = splitsTotal - totalMins;
 
+  // Sync splits to target (auto-sync total time) DO IT AFTER splitsTotal is defined
+  useEffect(() => {
+    if (splitsTotal > 0) {
+      setTargetH(Math.floor(splitsTotal / 60));
+      setTargetM(splitsTotal % 60);
+    }
+  }, [splitsTotal]);
+
   const statusColor = Math.abs(diff) <= 5 ? '#16a34a' : diff > 0 ? '#dc2626' : '#d97706';
   const statusMsg =
     Math.abs(diff) <= 5 ? t('splits_ok') :
-    diff > 0 ? `⚠️ ${diff} ${t('splits_over')}` :
-               `⚠️ ${Math.abs(diff)} ${t('splits_under')}`;
+      diff > 0 ? `⚠️ ${diff} ${t('splits_over')}` :
+        `⚠️ ${Math.abs(diff)} ${t('splits_under')}`;
 
   const pct = totalMins > 0 ? Math.min((splitsTotal / totalMins) * 100, 100) : 0;
 
@@ -134,15 +142,27 @@ export default function StepSplits({ form, update, next, back }) {
                   {fmtMins(splits[seg.key] ?? 0)}
                 </span>
               </div>
-              <input
-                type="range"
-                min={seg.min} max={seg.max} step={seg.step}
-                value={splits[seg.key] ?? seg.min}
-                onChange={e => setSplit(seg.key, e.target.value)}
-                style={{ ...styles.sliderTrack, '--thumb-color': seg.color }}
-                className="split-slider"
-                data-color={seg.color}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+                <input
+                  type="range"
+                  min={seg.min} max={seg.max} step={seg.step}
+                  value={splits[seg.key] ?? seg.min}
+                  onChange={e => setSplit(seg.key, e.target.value)}
+                  style={{ ...styles.sliderTrack, flex: 1, '--thumb-color': seg.color, marginBottom: 0 }}
+                  className="split-slider"
+                  data-color={seg.color}
+                />
+                <div style={{ display: 'flex', alignItems: 'center', background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: '8px', padding: '4px 8px' }}>
+                  <input
+                    type="number"
+                    min={seg.min} max={seg.max}
+                    value={splits[seg.key] ?? 0}
+                    onChange={e => setSplit(seg.key, e.target.value)}
+                    style={{ width: '45px', border: 'none', outline: 'none', fontSize: '16px', fontWeight: '700', color: '#0f172a', textAlign: 'center' }}
+                  />
+                  <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600' }}>min</span>
+                </div>
+              </div>
               <div style={styles.sliderRange}>
                 <span>{fmtMins(seg.min)}</span>
                 <span>{fmtMins(seg.max)}</span>
