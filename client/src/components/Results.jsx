@@ -337,7 +337,13 @@ export default function Results({ plan, form, restart }) {
                       })}
                       <tr>
                         <td colSpan={2} style={{ background: '#f43f5e', color: '#fff', fontSize: 12, fontWeight: 'bold', textAlign: 'center', padding: '6px' }}>
-                          {t('sticker_finish')} ({fmtHrs(segmentBreakdown?.bike?.durationHrs ?? form.durationHrs)})
+                          {(() => {
+                            const bikeSeg = segmentBreakdown && segmentBreakdown.find ? segmentBreakdown.find(s => s.segment === 'bike') : null;
+                            const finishStr = bikeSeg 
+                              ? `${Math.floor(bikeSeg.durationMins / 60)}h${bikeSeg.durationMins % 60 > 0 ? (bikeSeg.durationMins % 60) + 'min' : ''}`
+                              : fmtHrs(form.durationHrs);
+                            return `${t('sticker_finish')} (${finishStr})`;
+                          })()}
                         </td>
                       </tr>
                     </tbody>
