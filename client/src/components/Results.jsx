@@ -245,7 +245,7 @@ export default function Results({ plan, form, restart }) {
         </div>
 
         {/* Phase 3: Strategy Sticker Download Section */}
-        {(() => {
+{(() => {
           const bikeSection = timeline.find(s => s.segment === 'bike');
           if (!bikeSection) return null; // Strategy Sticker only for Bike section!
 
@@ -254,18 +254,18 @@ export default function Results({ plan, form, restart }) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <div>
                   <h2 style={{ ...styles.sectionTitle, color: '#2563eb' }}>🚴‍♂️ {t('sticker_title')}</h2>
-                  <p style={styles.sectionDesc}>{t('sticker_desc')}</p>
+                  <p style={{ ...styles.sectionDesc, fontSize: 13 }}>{t('sticker_desc')}</p>
                 </div>
                 <button 
                   onClick={downloadCheatSheet} 
                   disabled={downloading}
                   style={{
-                    backgroundColor: downloading ? '#94a3b8' : '#2563eb', color: '#fff', border: 'none', 
-                    padding: '10px 16px', borderRadius: 8, fontWeight: 600, cursor: 'pointer', transition: '0.2s',
-                    display: 'flex', alignItems: 'center', gap: 8
-                  }}
-                >
-                  {downloading ? '⏳ Đang tạo ảnh...' : '⬇️ Tải file PNG'}
+                    background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8,
+                    padding: '10px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 6, transition: '0.2s',
+                    opacity: downloading ? 0.7 : 1
+                  }}>
+                  {downloading ? '⏳...' : t('sticker_download')}
                 </button>
               </div>
               
@@ -377,7 +377,8 @@ export default function Results({ plan, form, restart }) {
                 {/* Calculate Total Order */}
                 <div style={{ marginTop: 15, borderTop: '2px solid #e2e8f0', paddingTop: 20 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
-                    <span style={{ fontSize: 16, fontWeight: 700, color: '#334155' }}>Tổng tiền tạm tính:</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16 }}>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: '#334155' }}>{t('cart_subtotal')}</span>
                     <span style={{ fontSize: 20, fontWeight: 800, color: '#16a34a' }}>{totalPriceVND.toLocaleString()} VND</span>
                   </div>
                   <button 
@@ -389,12 +390,12 @@ export default function Results({ plan, form, restart }) {
                       cursor: (ordering || cartItems.every(p => p.quantity === 0)) ? 'not-allowed' : 'pointer',
                       transition: '0.2s',
                     }}>
-                    {ordering ? '⏳ Đang gửi yêu cầu...' : '🛒 Yêu Cầu Đặt Hàng & Tư Vấn'}
+                    {ordering ? t('cart_sending') : t('cart_order_btn')}
                   </button>
                   {orderSuccess && (
                      <div style={{ background: '#ecfdf5', border: '1px solid #10b981', padding: '10px', borderRadius: 6, marginTop: 12 }}>
                        <p style={{ color: '#047857', textAlign: 'center', margin: 0, fontWeight: 600, fontSize: 13 }}>
-                         ✅ Yêu cầu đã được gửi lên hệ thống Hiboost CRM. Nhân viên chúng tôi sẽ gọi điện xác nhận ưu đãi và lên đơn cho bạn!
+                         {t('cart_success')}
                        </p>
                      </div>
                   )}
@@ -500,7 +501,13 @@ function ProductCard({ product, t, onPlus, onMinus }) {
       )}
 
       <p style={styles.productReason}>{product.reason}</p>
-      <p style={styles.productUsage}>📋 {product.usage}</p>
+      <p style={styles.productUsage}>📋 {(() => {
+        if (!product.usage) return '';
+        const [key, param] = product.usage.split(':');
+        const translated = t(key);
+        if (param && translated) return translated.replace('{interval}', param);
+        return translated || product.usage;
+      })()}</p>
       <div style={styles.productFooter}>
         <span style={styles.productPrice}>
           {product.priceVND ? `${(product.priceVND * product.quantity).toLocaleString()} VND` : ''}

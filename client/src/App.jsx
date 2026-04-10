@@ -106,7 +106,7 @@ function Header() {
   const { lang, setLang, t } = useLang();
   return (
     <header style={styles.header}>
-      <div className="header-inner" style={styles.headerInnerBase}>
+      <div style={styles.headerInnerBase}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <img src="/logo.png" alt="HiBoost" style={{ height: 36, objectFit: 'contain' }} />
           <div className="logo-divider" style={{ width: 1, height: 24, background: '#cbd5e1' }}></div>
@@ -172,7 +172,7 @@ const styles = {
     borderBottom: '1px solid rgba(0,0,0,0.06)', padding: '0 20px', 
     boxShadow: '0 4px 20px rgba(0,0,0,0.03)', position: 'sticky', top: 0, zIndex: 100 
   },
-  headerInnerBase: { maxWidth: 1024, margin: '0 auto', height: 72, display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  headerInnerBase: { maxWidth: 1024, margin: '0 auto', height: 72, display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '10px' },
   logoSub: { fontSize: 16, color: '#475569', fontWeight: 600, letterSpacing: '-0.3px' },
   headerRight: { display: 'flex', alignItems: 'center', gap: 16 },
   langToggle: { display: 'flex', alignItems: 'center', gap: 4, background: '#f1f5f9', padding: '4px', borderRadius: 20 },

@@ -615,7 +615,7 @@ function recommendProducts({ carbsPerHr, sodiumPerHr, fluidPerHr, durationHrs, t
        recs.push({
          ...HIBOOST_PRODUCTS.find(p => p.id === 'maurten-320'),
          quantity: totalSachets,
-         usage: `Pha 1 gói (80g carbs) vào 500ml. Uống từ từ mỗi 15 phút. Nguồn hydrogel hạn chế tức bụng.`,
+         usage: 'usage_maurten_320',
        });
        carbsFromLiquidPerHr = sachetPerHr * 80;
     }
@@ -636,7 +636,7 @@ function recommendProducts({ carbsPerHr, sodiumPerHr, fluidPerHr, durationHrs, t
     recs.push({
       ...electrolyteDrink,
       quantity: bottlesNeeded,
-      usage: `Pha 1 gói cho 500ml nước. Cấp nước và điện giải liên tục.`,
+      usage: 'usage_ph_powder',
     });
   }
 
@@ -650,7 +650,7 @@ function recommendProducts({ carbsPerHr, sodiumPerHr, fluidPerHr, durationHrs, t
     recs.push({
       ...gel,
       quantity: totalGels,
-      usage: `Ăn 1 gel mỗi ${interval} phút. Không nạp cùng lúc với lúc uống Maurten 320.`,
+      usage: `usage_ph_gel:${interval}`,
     });
   }
 
@@ -660,7 +660,7 @@ function recommendProducts({ carbsPerHr, sodiumPerHr, fluidPerHr, durationHrs, t
     recs.push({
       ...cafGel,
       quantity: Math.ceil(durationHrs / 3),
-      usage: `Save for the final third of your race. Max 2–3 per event.`,
+      usage: 'usage_ph_gel_caf',
     });
   }
 
@@ -670,7 +670,7 @@ function recommendProducts({ carbsPerHr, sodiumPerHr, fluidPerHr, durationHrs, t
     recs.push({
       ...pf90,
       quantity: Math.ceil(durationHrs / 1.5),
-      usage: `Resealable 90g carb pouch for bike leg. Sip gradually — 1 pouch lasts ~1.5h at 60g/hr.`,
+      usage: 'usage_pf90',
     });
   }
 
@@ -681,16 +681,16 @@ function recommendProducts({ carbsPerHr, sodiumPerHr, fluidPerHr, durationHrs, t
     recs.push({
       ...caps,
       quantity: capsNeeded,
-      usage: `Take 1–2 caps with water every 30–45 min.`,
+      usage: 'usage_salt_caps',
     });
   }
 
   // ── 7. Maurten Gel (premium alternative) ──
-  if (durationHrs >= 1.5 && carbsPerHr >= 40) {
+    const mInterval = Math.round(60 / (carbsPerHr / 25));
     recs.push({
       ...HIBOOST_PRODUCTS.find(p => p.id === 'maurten-gel-100'),
       quantity: Math.ceil((carbsPerHr * durationHrs) / 25),
-      usage: `Premium gel option. Take 1 every ${Math.round(60 / (carbsPerHr / 25))} min as an alternative to PF 30.`,
+      usage: `usage_maurten_gel:${mInterval}`,
     });
   }
 

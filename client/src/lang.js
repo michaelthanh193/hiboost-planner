@@ -202,6 +202,22 @@ export const translations = {
     sticker_time:       'TIME',
     sticker_nutrition:  'NUTRITION',
     sticker_finish:     'BIKE FINISH',
+    sticker_download:   '⬇️ Download PNG',
+
+    // Cart / E-commerce
+    cart_subtotal:      'Estimated Subtotal:',
+    cart_order_btn:     '🛒 Order Request & Advice',
+    cart_sending:       '⏳ Sending request...',
+    cart_success:       '✅ Order request sent to HiBoost CRM. We will contact you soon!',
+
+    // Usage keys
+    usage_maurten_320:  'Mix 1 sachet (80g carbs) in 500ml. Sip slowly every 15 min.',
+    usage_ph_powder:    'Mix 1 sachet in 500ml water. Continuous hydration & electrolytes.',
+    usage_ph_gel:       'Take 1 gel every {interval} min. Do not take at the same time as Maurten 320.',
+    usage_ph_gel_caf:   'Save for the final third of your race. Max 2–3 per event.',
+    usage_pf90:         '90g carbs pouch for bike. 1 pouch lasts ~1.5h at 60g/hr.',
+    usage_salt_caps:    'Take 1–2 caps with water every 30–45 min.',
+    usage_maurten_gel:  'Premium gel option. Take 1 every {interval} min.',
 
     // Tips keys from nutrition engine
     tip_female_fat_ox: 'Female athletes: oestrogen promotes fat oxidation — you may tolerate slightly lower carb intake than male athletes at same intensity.',
@@ -426,6 +442,22 @@ export const translations = {
     sticker_time:       'THỜI GIAN',
     sticker_nutrition:  'DINH DƯỠNG',
     sticker_finish:     'HOÀN THÀNH ĐẠP',
+    sticker_download:   '⬇️ Tải file PNG',
+
+    // Cart / E-commerce
+    cart_subtotal:      'Tổng tiền tạm tính:',
+    cart_order_btn:     '🛒 Yêu Cầu Đặt Hàng & Tư Vấn',
+    cart_sending:       '⏳ Đang gửi yêu cầu...',
+    cart_success:       '✅ Yêu cầu đã được gửi lên hệ thống Hiboost CRM. Nhân viên chúng tôi sẽ gọi điện xác nhận ưu đãi và lên đơn cho bạn!',
+
+    // Usage keys
+    usage_maurten_320:  'Pha 1 gói (80g carbs) vào 500ml. Uống từ từ mỗi 15 phút. Nguồn hydrogel hạn chế tức bụng.',
+    usage_ph_powder:    'Pha 1 gói cho 500ml nước. Cấp nước và điện giải liên tục.',
+    usage_ph_gel:       'Ăn 1 gel mỗi {interval} phút. Không nạp cùng lúc với lúc uống Maurten 320.',
+    usage_ph_gel_caf:   'Dành riêng cho 1/3 quãng đường cuối. Tối đa 2–3 gói mỗi sự kiện.',
+    usage_pf90:         'Túi 90g Carbs cho đạp xe. 1 túi dùng trong ~1.5 giờ ở mức 60g/h.',
+    usage_salt_caps:    'Uống 1–2 viên kèm nước mỗi 30–45 phút.',
+    usage_maurten_gel:  'Dòng Gel Hydrogel cao cấp. Dùng 1 gói mỗi {interval} phút.',
 
     // Tips keys from nutrition engine
     tip_female_fat_ox: 'VĐV Nữ: hormone oestrogen thúc đẩy quá trình đốt mỡ — bạn có thể dung nạp lượng carb thấp hơn một chút so với VĐV nam ở cùng cường độ.',

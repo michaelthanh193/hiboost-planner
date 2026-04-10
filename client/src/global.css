@@ -7,6 +7,8 @@ body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
   color: #1e293b;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* ── Responsive layout helpers ──────────────────────────────────────────── */
@@ -264,14 +266,7 @@ body {
 
 /* ── Header responsive ───────────────────────────────────────────────────── */
 .header-inner {
-  max-width: 900px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64px;
-  padding: 0;
-  gap: 12px;
+  width: 100%;
 }
 
 @media (max-width: 480px) {
