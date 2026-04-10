@@ -21,17 +21,17 @@ const EVENT_CATALOG = {
       {
         groupLabel: 'Ultra Running',
         events: [
-          { id: 'ultra_50k',     label: 'Ultra 50K',            dist: '50 km',     tiers: { beginner: 8.00, intermediate: 6.00, advanced: 3.75 } },
-          { id: 'ultra_100k',    label: 'Ultra 100K',           dist: '100 km',    tiers: { beginner: 18.0, intermediate: 13.0, advanced: 8.50 } },
-          { id: 'ultra_100mi',   label: 'Ultra 100 Miles',      dist: '160 km',    tiers: { beginner: 32.0, intermediate: 24.0, advanced: 17.0 } },
+          { id: 'ultra_50k',     label: 'Ultra 50K',            dist: '50 km',     tiers: { beginner: 9.00, intermediate: 5.50, advanced: 2.75 } },
+          { id: 'ultra_100k',    label: 'Ultra 100K',           dist: '100 km',    tiers: { beginner: 18.0, intermediate: 12.0, advanced: 6.10 } },
+          { id: 'ultra_100mi',   label: 'Ultra 100 Miles',      dist: '160 km',    tiers: { beginner: 36.0, intermediate: 24.0, advanced: 11.5 } },
         ],
       },
       {
         groupLabel: 'Trail Running',
         events: [
-          { id: 'trail_21k',     label: 'Trail 21K',            dist: '21 km',     tiers: { beginner: 4.00, intermediate: 2.75, advanced: 1.83 } },
-          { id: 'trail_50k',     label: 'Trail 50K',            dist: '50 km',     tiers: { beginner: 12.0, intermediate: 8.00, advanced: 5.25 } },
-          { id: 'trail_100k',    label: 'Trail 100K',           dist: '100 km',    tiers: { beginner: 28.0, intermediate: 18.0, advanced: 12.0 } },
+          { id: 'trail_21k',     label: 'Trail 21K',            dist: '21 km',     tiers: { beginner: 5.00, intermediate: 3.00, advanced: 1.50 } },
+          { id: 'trail_50k',     label: 'Trail 50K',            dist: '50 km',     tiers: { beginner: 14.0, intermediate: 8.50, advanced: 4.50 } },
+          { id: 'trail_100k',    label: 'Trail 100K',           dist: '100 km',    tiers: { beginner: 32.0, intermediate: 20.0, advanced: 10.5 } },
         ],
       },
     ],
@@ -54,8 +54,8 @@ const EVENT_CATALOG = {
       {
         groupLabel: 'Long Course',
         events: [
-          { id: 'challenge_tri', label: 'Long Course (226km)',   dist: '3.8km / 180km / 42km',   tiers: { beginner: 16.0, intermediate: 12.0, advanced: 9.00 } },
-          { id: 'ultra_tri',     label: 'Double / Ultra Tri',   dist: '7.6km+ / 360km+ / 84km+', tiers: { beginner: 34.0, intermediate: 26.0, advanced: 19.0 } },
+          { id: 'challenge_tri', label: 'Long Course (226km)',   dist: '3.8km / 180km / 42km',   tiers: { beginner: 17.5, intermediate: 12.5, advanced: 7.75 } },
+          { id: 'ultra_tri',     label: 'Double / Ultra Tri',   dist: '7.6km+ / 360km+ / 84km+', tiers: { beginner: 48.0, intermediate: 30.0, advanced: 18.5 } },
         ],
       },
     ],
@@ -77,15 +77,15 @@ const EVENT_CATALOG = {
       {
         groupLabel: 'Race Formats',
         events: [
-          { id: 'time_trial',    label: 'Time Trial',           dist: '20–40 km',  tiers: { beginner: 1.25, intermediate: 0.92, advanced: 0.55 } },
-          { id: 'criterium',     label: 'Criterium / Circuit',  dist: '30–60 km',  tiers: { beginner: 1.75, intermediate: 1.25, advanced: 0.83 } },
-          { id: 'stage_race',    label: 'Stage Race (per day)', dist: '100–200 km/day', tiers: { beginner: 6.50, intermediate: 4.50, advanced: 3.25 } },
+          { id: 'time_trial',    label: 'Time Trial',           dist: '20–40 km',  tiers: { beginner: 2.00, intermediate: 1.00, advanced: 0.40 } },
+          { id: 'criterium',     label: 'Criterium / Circuit',  dist: '30–60 km',  tiers: { beginner: 2.50, intermediate: 1.50, advanced: 0.75 } },
+          { id: 'stage_race',    label: 'Stage Race (per day)', dist: '100–200 km/day', tiers: { beginner: 10.0, intermediate: 6.00, advanced: 3.00 } },
         ],
       },
       {
         groupLabel: 'Ultra Cycling',
         events: [
-          { id: 'cycling_300k',  label: 'Ultra 300km+',         dist: '300+ km',   tiers: { beginner: 16.0, intermediate: 12.0, advanced: 9.50 } },
+          { id: 'cycling_300k',  label: 'Ultra 300km+',         dist: '300+ km',   tiers: { beginner: 20.0, intermediate: 14.0, advanced: 8.50 } },
         ],
       },
     ],
