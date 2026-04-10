@@ -107,8 +107,9 @@ function Header() {
   return (
     <header style={styles.header}>
       <div className="header-inner" style={styles.headerInnerBase}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-          <img src="/logo.svg" alt="HiBoost" style={{ height: 32 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <img src="/logo.svg" alt="HiBoost" style={{ height: 42, objectFit: 'contain' }} />
+          <div className="logo-divider" style={{ width: 1, height: 24, background: '#cbd5e1' }}></div>
           <span className="logo-sub" style={styles.logoSub}>Nutrition Planner</span>
         </div>
         <div style={styles.headerRight}>
@@ -120,7 +121,6 @@ function Header() {
               style={{ ...styles.langBtn, ...(lang === 'en' ? styles.langBtnActive : {}) }}
               title="English"
             >EN</button>
-            <span style={styles.langDivider}>|</span>
             <button
               className="lang-btn"
               onClick={() => setLang('vi')}
@@ -166,33 +166,38 @@ function ProgressBar({ step, steps }) {
 }
 
 const styles = {
-  app: { minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc' },
-  header: { background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', position: 'sticky', top: 0, zIndex: 100 },
-  headerInnerBase: { maxWidth: 900, margin: '0 auto' },
-  logo: { display: 'flex', alignItems: 'center', gap: 8 },
-  logoIcon: { fontSize: 24 },
-  logoText: { fontSize: 22, fontWeight: 800, color: '#f97316', letterSpacing: '-0.5px' },
-  logoSub: { fontSize: 13, color: '#94a3b8', marginLeft: 4, fontWeight: 500 },
-  headerRight: { display: 'flex', alignItems: 'center', gap: 8 },
-  langToggle: { display: 'flex', alignItems: 'center', gap: 2 },
+  app: { minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#fafaf9', fontFamily: '"Inter", system-ui, sans-serif' },
+  header: { 
+    background: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+    borderBottom: '1px solid rgba(0,0,0,0.06)', padding: '0 20px', 
+    boxShadow: '0 4px 20px rgba(0,0,0,0.03)', position: 'sticky', top: 0, zIndex: 100 
+  },
+  headerInnerBase: { maxWidth: 1024, margin: '0 auto', height: 72, display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  logoSub: { fontSize: 16, color: '#475569', fontWeight: 600, letterSpacing: '-0.3px' },
+  headerRight: { display: 'flex', alignItems: 'center', gap: 16 },
+  langToggle: { display: 'flex', alignItems: 'center', gap: 4, background: '#f1f5f9', padding: '4px', borderRadius: 20 },
   langBtn: {
-    background: 'none', border: 'none', padding: '4px 8px',
-    fontSize: 13, fontWeight: 700, cursor: 'pointer', color: '#94a3b8',
-    transition: 'color 0.2s', letterSpacing: '0.5px',
+    background: 'none', border: 'none', padding: '6px 12px', borderRadius: 16,
+    fontSize: 13, fontWeight: 700, cursor: 'pointer', color: '#64748b',
+    transition: 'all 0.2s ease', letterSpacing: '0.4px',
   },
-  langBtnActive: { color: '#f97316' },
-  langDivider: { fontSize: 12, color: '#e2e8f0', userSelect: 'none' },
+  langBtnActive: { color: '#f97316', background: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' },
   shopBtn: {
-    background: '#f97316', color: '#fff', padding: '8px 16px', borderRadius: 8,
-    textDecoration: 'none', fontSize: 13, fontWeight: 600,
-    boxShadow: '0 2px 8px rgba(249,115,22,0.25)', whiteSpace: 'nowrap',
+    background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)', color: '#fff', 
+    padding: '10px 20px', borderRadius: 24, textDecoration: 'none', 
+    fontSize: 14, fontWeight: 600, boxShadow: '0 4px 14px rgba(234,88,12,0.3)', 
+    whiteSpace: 'nowrap', transition: 'transform 0.2s ease, box-shadow 0.2s ease',
   },
-  progressWrap: { background: '#fff', padding: '16px 16px 0', borderBottom: '1px solid #e2e8f0' },
-  progressItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, zIndex: 1 },
-  progressDot: { width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, transition: 'all 0.3s', color: '#fff' },
-  progressLabel: { fontSize: 11, fontWeight: 500, transition: 'color 0.3s', whiteSpace: 'nowrap' },
-  progressLine: { position: 'absolute', top: 16, left: '5%', right: '5%', height: 2, background: '#e2e8f0', zIndex: 0 },
-  progressFill: { height: '100%', background: 'linear-gradient(90deg, #22c55e, #f97316)', transition: 'width 0.4s ease', borderRadius: 2 },
-  footer: { padding: '16px', textAlign: 'center', borderTop: '1px solid #e2e8f0', color: '#94a3b8', fontSize: 12 },
-  link: { color: '#f97316', textDecoration: 'none' },
+  progressWrap: { background: 'transparent', padding: '24px 20px 0' },
+  progressItem: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, zIndex: 1 },
+  progressDot: { 
+    width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', 
+    justifyContent: 'center', fontSize: 13, fontWeight: 700, transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', 
+    color: '#fff', boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+  },
+  progressLabel: { fontSize: 12, fontWeight: 600, transition: 'color 0.4s ease', whiteSpace: 'nowrap' },
+  progressLine: { position: 'absolute', top: 18, left: '5%', right: '5%', height: 3, background: '#e2e8f0', zIndex: 0, borderRadius: 3 },
+  progressFill: { height: '100%', background: 'linear-gradient(90deg, #f97316, #ea580c)', transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)', borderRadius: 3 },
+  footer: { padding: '24px', textAlign: 'center', borderTop: '1px solid #e2e8f0', color: '#94a3b8', fontSize: 13, background: '#fff' },
+  link: { color: '#ea580c', textDecoration: 'none', fontWeight: 500 },
 };
