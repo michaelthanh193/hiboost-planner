@@ -108,7 +108,7 @@ function Header() {
     <header style={styles.header}>
       <div className="header-inner" style={styles.headerInnerBase}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <img src="/logo.svg" alt="HiBoost" style={{ height: 42, objectFit: 'contain' }} />
+          <img src="/logo.png" alt="HiBoost" style={{ height: 36, objectFit: 'contain' }} />
           <div className="logo-divider" style={{ width: 1, height: 24, background: '#cbd5e1' }}></div>
           <span className="logo-sub" style={styles.logoSub}>Nutrition Planner</span>
         </div>
