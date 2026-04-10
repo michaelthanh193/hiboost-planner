@@ -131,6 +131,9 @@ module.exports = async function handler(req, res) {
         'Thời Gian': {
           rich_text: [{ text: { content: fmtHrs(durationHrs) } }],
         },
+        'Đơn hàng': {
+          rich_text: [{ text: { content: orderText || '' } }],
+        },
       },
       children: childrenBlocks.length > 0 ? childrenBlocks : undefined,
     };
