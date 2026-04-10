@@ -398,7 +398,7 @@ export default function Results({ plan, form, restart }) {
                          {t('cart_success')}
                        </p>
                      </div>
-                  )}
+                   )}
                 </div>
               </div>
             )}
@@ -411,7 +411,7 @@ export default function Results({ plan, form, restart }) {
               <ul style={styles.tipList}>
                 {tips.map((tip, i) => (
                   <li key={i} style={styles.tipItem}>
-                    <span style={styles.tipBullet}>→</span>
+                    <span style={styles.tipBullet}>&rarr;</span>
                     <span>{t(tip) || tip}</span>
                   </li>
                 ))}
