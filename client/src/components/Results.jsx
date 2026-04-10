@@ -1,44 +1,35 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useLang } from '../LangContext';
-import { toPng } from 'html-to-image';
-
-function fmtHrs(h) {
-  if (!h || h <= 0) return '—';
-  const hrs = Math.floor(h);
-  const mins = Math.round((h - hrs) * 60);
-  if (hrs === 0) return `${mins}min`;
-  return mins === 0 ? `${hrs}h` : `${hrs}h${mins}min`;
-}
+import html2canvas from 'html2canvas';
 
 export default function Results({ plan, form, restart }) {
   const { t } = useLang();
-  const cheatSheetRef = useRef(null);
   const [downloading, setDownloading] = useState(false);
+  const stickerRef = useRef(null);
 
   const downloadCheatSheet = async () => {
-    if (!cheatSheetRef.current) return;
+    if (!stickerRef.current) return;
     setDownloading(true);
     try {
-      const dataUrl = await toPng(cheatSheetRef.current, { cacheBust: true, backgroundColor: '#ffffff', pixelRatio: 3 });
+      const canvas = await html2canvas(stickerRef.current, {
+        useCORS: true,
+        scale: 2,
+        backgroundColor: '#ffffff',
+      });
       const link = document.createElement('a');
-      link.download = `HiBoost_CheatSheet_${form.eventName || 'Race'}.png`;
-      link.href = dataUrl;
+      link.download = `HiBoost-Strategy-${form.lastName || 'Plan'}.png`;
+      link.href = canvas.toDataURL('image/png');
       link.click();
     } catch (err) {
-      console.error('Failed to generate cheat sheet', err);
+      console.error('Failed to generate sticker image:', err);
     } finally {
       setDownloading(false);
     }
   };
 
-  const { perHour, totals, timeline, products: initialProducts, tips, sweatRatePerHr, meta, segmentBreakdown } = plan;
+  const { perHour, totals, timeline, products: initialProducts, tips, meta, segmentBreakdown } = plan;
   
-  // Phase 4: E-commerce tracking & Shopping Cart
   const [cartItems, setCartItems] = useState(initialProducts);
-  useEffect(() => {
-    setCartItems(initialProducts);
-  }, [initialProducts]);
-
   const updateCart = (index, delta) => {
     const newCart = [...cartItems];
     let newQty = newCart[index].quantity + delta;
@@ -73,7 +64,7 @@ export default function Results({ plan, form, restart }) {
           sport: form.sport,
           eventName: form.eventName,
           durationHrs: form.durationHrs,
-          orderText: orderText
+          orderText
         })
       });
       if (!res.ok) throw new Error('Order failed');
@@ -117,7 +108,7 @@ export default function Results({ plan, form, restart }) {
         </div>
       )}
 
-      {/* Task 2.2: Sodium Alert for Extreme Sodum Loss */}
+      {/* Sodium Alert */}
       {perHour.sodiumMg > 1000 && (
         <div style={{
           background: '#fffbeb', border: '1.5px solid #fde68a', borderRadius: 10,
@@ -126,223 +117,113 @@ export default function Results({ plan, form, restart }) {
         }}>
           <span style={{ fontSize: 18, flexShrink: 0 }}>⚠️</span>
           <span>
-            <strong style={{ display: 'block', marginBottom: 2 }}>{t('results_high_sodium_title') || 'Cảnh Báo Lượng Muối:'}</strong>
-            {t('results_high_sodium_desc') || 'Lượng sụt giảm Sodium dự đoán ban đầu của bạn rất cao (>1500mg/h). Việc uống một lượng nước quá mặn liên tục trong nhiều giờ có thể gây rối loạn tiêu hoá. Hãy chủ động train dạ dày trong các phần tập dài, hoặc kết hợp dùng nước uống điện giải cùng muối viên (Salt caps) để cân bằng vị giác.'}
+            <strong style={{ display: 'block', marginBottom: 2 }}>{t('results_high_sodium_title')}</strong>
+            {t('results_high_sodium_desc')}
           </span>
         </div>
       )}
 
       {/* Key Numbers */}
       <div className="metrics-row" style={styles.metricsRow}>
-        <MetricCard
-          icon="🍬"
-          value={`${perHour.carbsG}g`}
-          label={t('results_carbs_hr')}
-          sub={`${totals.carbsG}g ${t('results_total')}`}
-          color="#f97316"
-        />
-        <MetricCard
-          icon="🧂"
-          value={`${perHour.sodiumMg}mg`}
-          label={t('results_sodium_hr')}
-          sub={`${totals.sodiumMg}mg ${t('results_total')}`}
-          color="#3b82f6"
-        />
-        <MetricCard
-          icon="💧"
-          value={`${perHour.fluidMl}ml`}
-          label={t('results_fluid_hr')}
-          sub={`${totals.fluidMl}ml ${t('results_total')}`}
-          color="#22c55e"
-        />
-        <MetricCard
-          icon="🌊"
-          value={`${sweatRatePerHr}ml`}
-          label={t('results_sweat_hr')}
-          sub={meta.sweatTestUsed && meta.sweatRateMlHr ? t('results_from_test') : t('results_estimated')}
-          color="#a855f7"
-        />
+        <MetricCard icon="🍬" value={`${perHour.carbsG}g`} label={t('results_carbs_hr')} sub={t('results_carbs_sub')} color="#f97316" />
+        <MetricCard icon="🧂" value={`${perHour.sodiumMg}mg`} label={t('results_sodium_hr')} sub={t('results_sodium_sub')} color="#3b82f6" />
+        <MetricCard icon="💧" value={`${perHour.fluidMl}ml`} label={t('results_fluid_hr')} sub={t('results_fluid_sub')} color="#06b6d4" />
+        <MetricCard icon="🔥" value={`${Math.round(perHour.carbsG * 4)}`} label={t('results_cals_hr')} sub={t('results_cals_sub')} color="#f43f5e" />
       </div>
 
-      {/* Triathlon Segment Breakdown */}
-      {segmentBreakdown && segmentBreakdown.length > 0 && (
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>{t('results_segment')}</h2>
-          <p style={styles.sectionDesc}>{t('results_segment_sub')}</p>
-          <div className="seg-grid" style={styles.segGrid}>
-            {segmentBreakdown.map((seg, i) => (
-              <div key={i} style={styles.segCard}>
-                <div style={styles.segTop}>
-                  <span style={styles.segIcon}>{seg.icon}</span>
+      <div className="results-grid" style={styles.grid}>
+        {/* Left column */}
+        <div>
+          <div style={styles.section}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div>
+                <h2 style={styles.sectionTitle}>{t('results_timeline')}</h2>
+                <p style={styles.sectionDesc}>{t('results_timeline_sub')}</p>
+              </div>
+              <Pill color="#3b82f6">{t('results_pacing_strategy')}</Pill>
+            </div>
+
+            <div style={styles.timelineList}>
+              {timeline.map((s, i) => (
+                <div key={i} style={styles.timelineItem}>
+                  <div style={styles.timeLineCol}>
+                    <div style={styles.timeLabel}>{s.fromMins === 0 ? "Start" : `${s.fromMins}'`}</div>
+                    <div style={styles.lineConnector} />
+                  </div>
+                  <div style={styles.actionCard}>
+                    <div style={styles.actionHeader}>
+                      <span style={{ fontSize: 16 }}>{s.icon}</span>
+                      <span style={styles.actionLabel}>{s.label}</span>
+                      <span style={styles.actionDuration}>({s.durationMins}')</span>
+                    </div>
+                    <div style={styles.actionContent}>
+                      {s.carbsG > 0 && <span>🍬 {s.carbsG}g Carbs</span>}
+                      {s.fluidMl > 0 && <span>💧 {s.fluidMl}ml Fluid</span>}
+                      {s.sodiumMg > 0 && <span>🧂 {s.sodiumMg}mg Sodium</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div style={styles.timelineItem}>
+                <div style={styles.timeLineCol}>
+                   <div style={styles.timeLabel}>{t('results_finish')}</div>
+                </div>
+                <div style={{ ...styles.actionCard, background: '#f8fafc', border: '1.5px dashed #cbd5e1', boxShadow: 'none' }}>
+                   <div style={{ fontWeight: 700, color: '#64748b', fontSize: 13 }}>{t('results_well_done')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sticker */}
+          {(() => {
+            const bikeSection = timeline.find(s => s.segment === 'bike');
+            if (!bikeSection) return null;
+            return (
+              <div ref={stickerRef} style={styles.sectionSticker}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                   <div>
-                    <div style={styles.segName}>{seg.label}</div>
-                    <div style={styles.segDur}>
-                      {seg.durationMins >= 60
-                        ? `${Math.floor(seg.durationMins / 60)}h ${seg.durationMins % 60 > 0 ? (seg.durationMins % 60) + 'min' : ''}`
-                        : `${seg.durationMins} min`}
-                    </div>
+                    <h2 style={{ ...styles.sectionTitle, color: '#2563eb' }}>🚴‍♂️ {t('sticker_title')}</h2>
+                    <p style={{ ...styles.sectionDesc, fontSize: 13 }}>{t('sticker_desc')}</p>
                   </div>
+                  <button 
+                    onClick={downloadCheatSheet} 
+                    disabled={downloading}
+                    style={{
+                      background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8,
+                      padding: '10px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', gap: 6, opacity: downloading ? 0.7 : 1
+                    }}>
+                    {downloading ? '⏳...' : t('sticker_download')}
+                  </button>
                 </div>
-                <div style={styles.segNums}>
-                  {seg.carbsG > 0   && <Pill color="#f97316">{seg.carbsG}g {t('nf_carbs')}</Pill>}
-                  {seg.fluidMl > 0  && <Pill color="#22c55e">{seg.fluidMl}ml fluid</Pill>}
-                  {seg.sodiumMg > 0 && <Pill color="#3b82f6">{seg.sodiumMg}mg {t('nf_sodium')}</Pill>}
-                  {seg.carbsG === 0 && seg.fluidMl === 0 && <Pill color="#6b7280">{t('results_no_fuel')}</Pill>}
-                </div>
-                {seg.note && <p style={styles.segNote}>{seg.note}</p>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="two-col" style={styles.twoCol}>
-        {/* Segmented Timeline */}
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>{t('results_timeline')}</h2>
-          <p style={styles.sectionDesc}>{t('results_timeline_sub')}</p>
-          <div style={styles.timeline}>
-            {timeline.map((section, si) => (
-              <div key={si} style={styles.timelineSection}>
-                {/* Section header */}
-                <div style={styles.sectionHeader}>
-                  <span style={styles.sectionHeaderIcon}>{section.icon}</span>
-                  <span style={styles.sectionHeaderLabel}>{section.label}</span>
-                </div>
-                {/* Items */}
-                {section.items.map((point, i) => (
-                  <div key={i} style={{
-                    ...styles.timelineRow,
-                    ...(i === section.items.length - 1 ? { borderLeftColor: 'transparent' } : {}),
-                  }}>
-                    <div style={{
-                      ...styles.timelineDot,
-                      background: section.segment === 'pre-race' ? '#94a3b8'
-                        : section.segment === 'swim' ? '#3b82f6'
-                        : section.segment === 'bike' ? '#f97316'
-                        : section.segment === 'run'  ? '#16a34a'
-                        : section.segment === 't1' || section.segment === 't2' ? '#8b5cf6'
-                        : '#f97316',
-                    }} />
-                    <div style={styles.timelineContent}>
-                      <div style={styles.timelineHeader}>
-                        <span style={styles.timelineTime}>{point.label}</span>
-                        {point.note && <span style={styles.timelineNote}>{point.note}</span>}
-                      </div>
-                      <div style={styles.timelineNums}>
-                        {point.carbsG > 0   && <Pill color="#f97316">{point.carbsG}g {t('nf_carbs')}</Pill>}
-                        {point.fluidMl > 0  && <Pill color="#22c55e">{point.fluidMl}ml fluid</Pill>}
-                        {point.sodiumMg > 0 && <Pill color="#3b82f6">{point.sodiumMg}mg {t('nf_sodium')}</Pill>}
-                        {point.carbsG === 0 && point.fluidMl === 0 && point.sodiumMg === 0 &&
-                          <Pill color="#94a3b8">{t('results_no_fuel')}</Pill>}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Phase 3: Strategy Sticker Download Section */}
-{(() => {
-          const bikeSection = timeline.find(s => s.segment === 'bike');
-          if (!bikeSection) return null; // Strategy Sticker only for Bike section!
-
-          return (
-            <div style={{ ...styles.section, marginTop: 30 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                <div>
-                  <h2 style={{ ...styles.sectionTitle, color: '#2563eb' }}>🚴‍♂️ {t('sticker_title')}</h2>
-                  <p style={{ ...styles.sectionDesc, fontSize: 13 }}>{t('sticker_desc')}</p>
-                </div>
-                <button 
-                  onClick={downloadCheatSheet} 
-                  disabled={downloading}
-                  style={{
-                    background: '#2563eb', color: '#fff', border: 'none', borderRadius: 8,
-                    padding: '10px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: 6, transition: '0.2s',
-                    opacity: downloading ? 0.7 : 1
-                  }}>
-                  {downloading ? '⏳...' : t('sticker_download')}
-                </button>
-              </div>
-              
-              {/* Render Area for HTML to Image */}
-              <div style={{ padding: 20, background: '#f8fafc', borderRadius: 12, border: '1px dashed #cbd5e1', overflowX: 'auto', display: 'flex', justifyContent: 'center' }}>
-                <div ref={cheatSheetRef} style={{
-                  width: '180px', background: '#fff', border: '1px solid #e2e8f0',
-                  padding: '4px', margin: '0 auto', fontFamily: 'Arial, sans-serif',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
-                }}>
-                  {/* Top Header */}
-                  <div style={{ color: '#9f1239', fontSize: 12, fontWeight: 'bold', padding: '2px 4px 6px 4px', textTransform: 'uppercase' }}>
-                    {form.firstName ? `${form.lastName} ${form.firstName}` : 'RACE STRATEGY'}
-                  </div>
-
-                  <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #94a3b8' }}>
+                <div style={styles.stickerContent}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff' }}>
                     <thead>
                       <tr>
-                        <th style={{ border: '1px solid #94a3b8', padding: '4px', fontSize: 10, color: '#475569', textAlign: 'center', width: '35%' }}>{t('sticker_time')}</th>
-                        <th style={{ border: '1px solid #94a3b8', padding: '4px', fontSize: 10, color: '#475569', textAlign: 'center', width: '65%' }}>{t('sticker_nutrition')}</th>
+                        <th style={{ border: '1px solid #94a3b8', padding: '6px', background: '#f8fafc', fontSize: 11 }}>{t('sticker_time')}</th>
+                        <th style={{ border: '1px solid #94a3b8', padding: '6px', background: '#f8fafc', fontSize: 11 }}>{t('sticker_nutrition')}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {bikeSection.items.map((pt, i) => {
-                        if (pt.carbsG === 0 && pt.fluidMl === 0) return null;
-                        if (pt.label.includes('End') || pt.label.includes('Finish')) return null;
-
-                        // Time parsing for clean format
-                        let timeStr = pt.label.replace(/\+/g, '').replace(/min/g, '').trim();
-                        if (pt.label.includes('Start')) timeStr = '0';
-                        
-                        let timeNum = parseInt(timeStr);
-                        let displayTime = pt.label;
-                        if (!isNaN(timeNum)) {
-                          if (timeNum === 0) displayTime = `0'`;
-                          else if (timeNum % 60 === 0) displayTime = `${timeNum/60}h`;
-                          else if (timeNum > 60) displayTime = `${Math.floor(timeNum/60)}h${timeNum%60}`;
-                          else displayTime = `${timeNum}'`;
-                        }
-
-                        const isFluid = pt.fluidMl > 0;
-                        const isCarb = pt.carbsG > 0;
-
-                        return (
-                          <tr key={i}>
-                            <td style={{ border: '1px solid #94a3b8', padding: '4px', fontSize: 12, color: '#881337', textAlign: 'center' }}>
-                              {displayTime}
-                            </td>
-                            <td style={{ border: '1px solid #94a3b8', padding: '4px', textAlign: 'center', verticalAlign: 'middle' }}>
-                              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, minHeight: '32px' }}>
-                                {isFluid && (
-                                  <img 
-                                    src="/images/products/PF&H_Cartoon%20Product_images/PFH%20500ml%20bottle.png" 
-                                    alt="fluid" 
-                                    style={{ height: '32px' }} 
-                                  />
-                                )}
-                                {isCarb && (
-                                  <img 
-                                    src="/images/products/PF&H_Cartoon%20Product_images/PF30%20gel.png" 
-                                    alt="carb" 
-                                    style={{ height: '32px', borderRadius: 4 }} 
-                                  />
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {bikeSection.planItems.map((pt, i) => (
+                        <tr key={i}>
+                          <td style={{ border: '1px solid #94a3b8', padding: '4px', fontSize: 12, textAlign: 'center' }}>
+                            {pt.label}
+                          </td>
+                          <td style={{ border: '1px solid #94a3b8', padding: '4px', textAlign: 'center' }}>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: 6 }}>
+                              {pt.fluidMl > 0 && <img src="/images/products/PF&H_Cartoon%20Product_images/PFH%20500ml%20bottle.png" alt="fluid" style={{ height: '32px' }} />}
+                              {pt.carbsG > 0 && <img src="/images/products/PF&H_Cartoon%20Product_images/PF30%20gel.png" alt="carb" style={{ height: '32px' }} />}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
                       <tr>
                         <td colSpan={2} style={{ background: '#f43f5e', color: '#fff', fontSize: 12, fontWeight: 'bold', textAlign: 'center', padding: '6px' }}>
                           {(() => {
-                            const bikeSeg = segmentBreakdown && segmentBreakdown.find ? segmentBreakdown.find(s => s.segment === 'bike') : null;
-                            const finishStr = bikeSeg 
-                              ? `${Math.floor(bikeSeg.durationMins / 60)}h${bikeSeg.durationMins % 60 > 0 ? (bikeSeg.durationMins % 60) + 'min' : ''}`
-                              : fmtHrs(form.durationHrs);
-                            return `${t('sticker_finish')} (${finishStr})`;
+                             const bikeSeg = segmentBreakdown ? segmentBreakdown.find(s => s.segment === 'bike') : null;
+                             return `${t('sticker_finish')} (${bikeSeg ? fmtHrs(bikeSeg.durationMins/60) : fmtHrs(form.durationHrs)})`;
                           })()}
                         </td>
                       </tr>
@@ -350,68 +231,41 @@ export default function Results({ plan, form, restart }) {
                   </table>
                 </div>
               </div>
-            </div>
-          );
-        })()}
+            );
+          })()}
+        </div>
 
         {/* Right column */}
         <div>
-          {/* Product Recommendations */}
           <div style={styles.section}>
             <h2 style={styles.sectionTitle}>{t('results_products')}</h2>
             <p style={styles.sectionDesc}>{t('results_products_sub')}</p>
-            {cartItems.length === 0 ? (
-              <p style={{ color: '#6b7280', fontSize: 14 }}>{t('results_no_products')}</p>
-            ) : (
+            {cartItems.length === 0 ? <p>{t('results_no_products')}</p> : (
               <div style={styles.productList}>
                 {cartItems.map((p, i) => (
-                  <ProductCard 
-                    key={i} 
-                    product={p} 
-                    t={t} 
-                    onPlus={() => updateCart(i, 1)}
-                    onMinus={() => updateCart(i, -1)}
-                  />
+                  <ProductCard key={i} product={p} t={t} onPlus={() => updateCart(i, 1)} onMinus={() => updateCart(i, -1)} />
                 ))}
-
-                {/* Calculate Total Order */}
-                <div style={{ marginTop: 15, borderTop: '2px solid #e2e8f0', paddingTop: 20 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16 }}>
-                    <span style={{ fontSize: 16, fontWeight: 700, color: '#334155' }}>{t('cart_subtotal')}</span>
-                    <span style={{ fontSize: 20, fontWeight: 800, color: '#16a34a' }}>{totalPriceVND.toLocaleString()} VND</span>
+                <div style={{ marginTop: 15, borderTop: '1px solid #e2e8f0', paddingTop: 20 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <span style={{ fontWeight: 700 }}>{t('cart_subtotal')}</span>
+                    <span style={{ fontWeight: 800, color: '#16a34a' }}>{totalPriceVND.toLocaleString()} VND</span>
                   </div>
-                  <button 
-                    onClick={submitOrder}
-                    disabled={ordering || cartItems.every(p => p.quantity === 0)}
-                    style={{
-                      width: '100%', background: (ordering || cartItems.every(p => p.quantity === 0)) ? '#94a3b8' : '#f97316', color: '#fff', 
-                      padding: '14px', borderRadius: 8, fontSize: 15, fontWeight: 700, border: 'none', 
-                      cursor: (ordering || cartItems.every(p => p.quantity === 0)) ? 'not-allowed' : 'pointer',
-                      transition: '0.2s',
-                    }}>
+                  <button onClick={submitOrder} disabled={ordering} style={{ width: '100%', background: '#f97316', color: '#fff', padding: '14px', borderRadius: 8, fontWeight: 700, border: 'none', cursor: 'pointer' }}>
                     {ordering ? t('cart_sending') : t('cart_order_btn')}
                   </button>
-                  {orderSuccess && (
-                     <div style={{ background: '#ecfdf5', border: '1px solid #10b981', padding: '10px', borderRadius: 6, marginTop: 12 }}>
-                       <p style={{ color: '#047857', textAlign: 'center', margin: 0, fontWeight: 600, fontSize: 13 }}>
-                         {t('cart_success')}
-                       </p>
-                     </div>
-                   )}
+                  {orderSuccess && <div style={{ color: '#047857', textAlign: 'center', marginTop: 12 }}>{t('cart_success')}</div>}
                 </div>
               </div>
             )}
           </div>
 
-          {/* Science Tips */}
           {tips.length > 0 && (
             <div style={styles.section}>
               <h2 style={styles.sectionTitle}>{t('results_tips')}</h2>
               <ul style={styles.tipList}>
                 {tips.map((tip, i) => (
                   <li key={i} style={styles.tipItem}>
-                    <span style={styles.tipBullet}>&rarr;</span>
+                    <span style={styles.tipBullet}>-&gt;</span>
                     <span>{t(tip) || tip}</span>
                   </li>
                 ))}
@@ -421,20 +275,13 @@ export default function Results({ plan, form, restart }) {
         </div>
       </div>
 
-      {/* CTA */}
-      <div className="cta-banner" style={styles.ctaBanner}>
-        <div>
-          <h3 style={styles.ctaTitle}>{t('results_cta_title')}</h3>
-          <p style={styles.ctaDesc}>{t('results_cta_desc')}</p>
-        </div>
-        <a href="https://www.hiboostnutrition.com/shop" target="_blank" rel="noreferrer" style={styles.ctaBtn}>
-          {t('results_cta_btn')}
-        </a>
+      <div style={styles.ctaBanner}>
+        <h3 style={styles.ctaTitle}>{t('results_cta_title')}</h3>
+        <p style={styles.ctaDesc}>{t('results_cta_desc')}</p>
+        <a href="https://www.hiboostnutrition.com/shop" target="_blank" rel="noreferrer" style={styles.ctaBtn}>{t('results_cta_btn')}</a>
       </div>
 
-      <div style={styles.disclaimer}>
-        {t('results_disclaimer')}
-      </div>
+      <div style={styles.disclaimer}>{t('results_disclaimer')}</div>
     </div>
   );
 }
@@ -459,48 +306,20 @@ function Pill({ color, children }) {
 }
 
 function ProductCard({ product, t, onPlus, onMinus }) {
-  const [showNutrition, setShowNutrition] = useState(false);
   const nf = product.nutrition || {};
-
   return (
-    <div
-      style={styles.productCard}
-      onMouseEnter={() => setShowNutrition(true)}
-      onMouseLeave={() => setShowNutrition(false)}
-    >
+    <div style={styles.productCard}>
       <div style={styles.productTop}>
         <div>
           <p style={styles.productName}>{product.name}</p>
-          <p style={styles.productType}>
-            {typeLabel(product.type)}
-            {product.brand && <span style={styles.productBrand}> · {product.brand}</span>}
-          </p>
+          <p style={styles.productType}>{typeLabel(product.type)} {product.brand && <span>· {product.brand}</span>}</p>
         </div>
-        
-        {/* Quantity Controller */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '1px solid #cbd5e1', borderRadius: 6, padding: '2px' }}>
-          <button onClick={onMinus} style={{ border: 'none', background: '#f1f5f9', cursor: 'pointer', padding: '4px 10px', fontSize: 16, borderRadius: 4, color: '#475569', fontWeight: 'bold' }}>-</button>
-          <div style={{ fontSize: 14, fontWeight: 700, width: 20, textAlign: 'center', color: '#0f172a' }}>{product.quantity}</div>
-          <button onClick={onPlus} style={{ border: 'none', background: '#f97316', cursor: 'pointer', padding: '4px 10px', fontSize: 16, borderRadius: 4, color: '#fff', fontWeight: 'bold' }}>+</button>
+        <div style={styles.quantityGrid}>
+           <button onClick={onMinus} style={styles.qtyBtn}>-</button>
+           <span style={styles.qtyVal}>{product.quantity}</span>
+           <button onClick={onPlus} style={styles.qtyBtn}>+</button>
         </div>
       </div>
-
-      {/* Nutrition Facts tooltip — shown on hover */}
-      {showNutrition && Object.keys(nf).length > 0 && (
-        <div style={styles.nutritionTooltip}>
-          <div style={styles.nfTitle}>{t('nf_title')} <span style={styles.nfServing}>{t('nf_per_serving')} ({product.servingSize || '1 unit'})</span></div>
-          <div style={styles.nfGrid}>
-            {nf.calories != null && <NfRow label={t('nf_calories')} value={`${nf.calories} kcal`} />}
-            {nf.carbsG != null    && <NfRow label={t('nf_carbs')} value={`${nf.carbsG}g`} color="#f97316" />}
-            {nf.sodiumMg != null  && <NfRow label={t('nf_sodium')} value={`${nf.sodiumMg}mg`} color="#3b82f6" />}
-            {nf.potassiumMg != null && nf.potassiumMg > 0 && <NfRow label={t('nf_potassium')} value={`${nf.potassiumMg}mg`} color="#8b5cf6" />}
-            {nf.proteinG != null && nf.proteinG > 0  && <NfRow label={t('nf_protein')} value={`${nf.proteinG}g`} color="#16a34a" />}
-            {nf.caffeineMg != null && <NfRow label={t('nf_caffeine')} value={`${nf.caffeineMg}mg`} color="#dc2626" />}
-          </div>
-        </div>
-      )}
-
-      <p style={styles.productReason}>{product.reason}</p>
       <p style={styles.productUsage}>📋 {(() => {
         if (!product.usage) return '';
         const [key, param] = product.usage.split(':');
@@ -509,30 +328,15 @@ function ProductCard({ product, t, onPlus, onMinus }) {
         return translated || product.usage;
       })()}</p>
       <div style={styles.productFooter}>
-        <span style={styles.productPrice}>
-          {product.priceVND ? `${(product.priceVND * product.quantity).toLocaleString()} VND` : ''}
-        </span>
-        {product.url && (
-          <a href={product.url} target="_blank" rel="noreferrer" style={styles.productLink}>
-            View product →
-          </a>
-        )}
+        <span style={styles.productPrice}>{product.priceVND ? `${(product.priceVND * product.quantity).toLocaleString()} VND` : ''}</span>
+        {product.url && <a href={product.url} target="_blank" rel="noreferrer" style={styles.productLink}>View →</a>}
       </div>
     </div>
   );
 }
 
-function NfRow({ label, value, color }) {
-  return (
-    <div style={styles.nfRow}>
-      <span style={styles.nfLabel}>{label}</span>
-      <span style={{ ...styles.nfValue, color: color || '#1e293b' }}>{value}</span>
-    </div>
-  );
-}
-
 function typeLabel(type) {
-  const map = { carb: '🍬 Carbohydrate', electrolyte: '🧂 Electrolyte', 'carb+fluid': '🍬💧 Carbs + Fluid', 'electrolyte+fluid': '🧂💧 Electrolyte + Fluid' };
+  const map = { carb: '🍬 Carb', electrolyte: '🧂 Electrolyte', 'carb+fluid': '🍬💧 Carbs + Fluid', 'electrolyte+fluid': '🧂💧 Salt + Fluid' };
   return map[type] || type;
 }
 
@@ -540,106 +344,67 @@ function capitalise(str) {
   return str ? str.charAt(0).toUpperCase() + str.slice(1).replace('_', ' ') : '';
 }
 
-const styles = {
-  container: { maxWidth: 1000, margin: '0 auto' },
-  heroBanner: {
-    background: 'linear-gradient(135deg, #fff7ed 0%, #fff 100%)',
-    border: '1.5px solid #fed7aa', borderRadius: 16, padding: '28px 32px',
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24,
-    boxShadow: '0 2px 16px rgba(249,115,22,0.08)',
-  },
-  heroLeft: {},
-  heroSubtitle: { fontSize: 13, color: '#f97316', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 },
-  heroTitle: { fontSize: 32, fontWeight: 800, color: '#0f172a', marginBottom: 6 },
-  heroDetail: { fontSize: 14, color: '#64748b' },
-  restartBtn: { background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: 8, padding: '10px 20px', color: '#64748b', cursor: 'pointer', fontWeight: 600, fontSize: 13 },
-  physioNote: {
-    display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10,
-    background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 10,
-    padding: '12px 16px', marginBottom: 20, fontSize: 13, color: '#166534', lineHeight: 1.5,
-  },
-  physioIcon: { fontSize: 16, flexShrink: 0 },
-  sweatTestBadge: {
-    marginLeft: 8, background: '#dcfce7', border: '1px solid #86efac',
-    borderRadius: 6, padding: '2px 10px', fontSize: 12, fontWeight: 600, color: '#15803d',
-    whiteSpace: 'nowrap',
-  },
-  metricsRow: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 28 },
-  metricCard: {
-    background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12,
-    padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, textAlign: 'center',
-    boxShadow: '0 1px 6px rgba(0,0,0,0.05)',
-  },
-  metricIcon: { fontSize: 26, marginBottom: 4 },
-  metricValue: { fontSize: 28, fontWeight: 800 },
-  metricLabel: { fontSize: 12, color: '#64748b', fontWeight: 500 },
-  metricSub: { fontSize: 11, color: '#94a3b8' },
-  twoCol: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 },
-  section: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: '24px 22px', marginBottom: 16, boxShadow: '0 1px 6px rgba(0,0,0,0.04)' },
-  sectionTitle: { fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 4 },
-  sectionDesc: { fontSize: 13, color: '#64748b', marginBottom: 16 },
-  timeline: { display: 'flex', flexDirection: 'column', gap: 0 },
-  timelineSection: { marginBottom: 8 },
-  sectionHeader: {
-    display: 'flex', alignItems: 'center', gap: 8,
-    background: '#f1f5f9', borderRadius: 8, padding: '7px 12px',
-    marginBottom: 12, marginLeft: 0,
-  },
-  sectionHeaderIcon: { fontSize: 16 },
-  sectionHeaderLabel: { fontSize: 13, fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px' },
-  timelineRow: { display: 'flex', gap: 14, paddingBottom: 14, borderLeft: '2px solid #e2e8f0', paddingLeft: 14, position: 'relative', marginLeft: 8 },
-  timelineDot: { width: 10, height: 10, borderRadius: '50%', background: '#f97316', position: 'absolute', left: -6, top: 4, flexShrink: 0 },
-  timelineContent: { flex: 1 },
-  timelineHeader: { display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 6 },
-  timelineTime: { fontSize: 13, fontWeight: 700, color: '#1e293b' },
-  timelineNote: { fontSize: 11, color: '#94a3b8' },
-  timelineNums: { display: 'flex', gap: 6, flexWrap: 'wrap' },
-  pill: { fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20 },
-  productList: { display: 'flex', flexDirection: 'column', gap: 12 },
-  productCard: { background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '14px 14px', position: 'relative', cursor: 'default' },
-  productTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 },
-  productName: { fontSize: 14, fontWeight: 700, color: '#1e293b' },
-  productType: { fontSize: 11, color: '#94a3b8', marginTop: 2 },
-  productBrand: { fontWeight: 600, color: '#64748b' },
+function fmtHrs(h) {
+  const num = parseFloat(h);
+  if (!num || num <= 0) return '';
+  const hrs = Math.floor(num);
+  const mins = Math.round((num - hrs) * 60);
+  if (hrs === 0) return `${mins}min`;
+  return mins === 0 ? `${hrs}h` : `${hrs}h${mins}min`;
+}
 
-  // Nutrition Facts tooltip
-  nutritionTooltip: {
-    background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 10,
-    padding: '12px 14px', marginBottom: 8,
-    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-    animation: 'fadeIn 0.15s ease',
-  },
-  nfTitle: { fontSize: 13, fontWeight: 700, color: '#0f172a', marginBottom: 8, borderBottom: '2px solid #0f172a', paddingBottom: 6 },
-  nfServing: { fontSize: 11, fontWeight: 400, color: '#94a3b8' },
-  nfGrid: { display: 'flex', flexDirection: 'column', gap: 4 },
-  nfRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2px 0', borderBottom: '1px solid #f1f5f9' },
-  nfLabel: { fontSize: 12, color: '#64748b' },
-  nfValue: { fontSize: 13, fontWeight: 700 },
-  productQty: { background: '#f97316', color: '#fff', borderRadius: 6, padding: '2px 8px', fontSize: 13, fontWeight: 800 },
-  productReason: { fontSize: 12, color: '#64748b', marginBottom: 4 },
-  productUsage: { fontSize: 12, color: '#94a3b8', marginBottom: 8 },
-  productFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  productPrice: { fontSize: 12, fontWeight: 600, color: '#16a34a' },
-  productLink: { fontSize: 12, color: '#f97316', textDecoration: 'none', fontWeight: 600 },
-  tipList: { listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 10 },
-  tipItem: { display: 'flex', gap: 10, fontSize: 13, color: '#374151', lineHeight: 1.5 },
-  segGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12 },
-  segCard: { background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '14px 14px' },
-  segTop: { display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 },
-  segIcon: { fontSize: 22 },
-  segName: { fontSize: 14, fontWeight: 700, color: '#1e293b' },
-  segDur: { fontSize: 12, color: '#94a3b8', marginTop: 2 },
-  segNums: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 },
-  segNote: { fontSize: 11, color: '#64748b', margin: 0, lineHeight: 1.4 },
-  tipBullet: { color: '#f97316', fontWeight: 700, flexShrink: 0 },
-  ctaBanner: {
-    background: 'linear-gradient(135deg, #f97316, #ea580c)',
-    borderRadius: 14, padding: '24px 28px',
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16,
-    boxShadow: '0 4px 20px rgba(249,115,22,0.3)',
-  },
-  ctaTitle: { fontSize: 20, fontWeight: 800, color: '#fff', marginBottom: 4 },
-  ctaDesc: { fontSize: 14, color: '#fed7aa' },
-  ctaBtn: { background: '#fff', color: '#ea580c', padding: '12px 24px', borderRadius: 8, textDecoration: 'none', fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' },
-  disclaimer: { background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 14px', fontSize: 11, color: '#94a3b8', lineHeight: 1.6 },
+const styles = {
+  container: { maxWidth: 1000, margin: '0 auto', padding: '20px' },
+  heroBanner: { background: 'linear-gradient(135deg, #fff7ed 0%, #fff 100%)', border: '1.5px solid #fed7aa', borderRadius: 16, padding: '28px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 },
+  heroLeft: { flex: 1 },
+  heroSubtitle: { fontSize: 13, fontWeight: 700, color: '#f97316', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 },
+  heroTitle: { fontSize: 32, fontWeight: 800, color: '#0f172a', margin: 0 },
+  heroDetail: { fontSize: 14, color: '#64748b', marginTop: 10 },
+  restartBtn: { background: '#f1f5f9', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, color: '#475569', cursor: 'pointer' },
+  physioNote: { background: '#f0f9ff', border: '1.5px solid #bae6fd', borderRadius: 12, padding: '14px 18px', marginBottom: 24, fontSize: 13, color: '#0369a1', display: 'flex', alignItems: 'center', gap: 10 },
+  physioIcon: { fontSize: 18 },
+  sweatTestBadge: { marginLeft: 'auto', background: '#fff', border: '1px solid #bae6fd', padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700 },
+  metricsRow: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 },
+  metricCard: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 4 },
+  metricIcon: { fontSize: 24, marginBottom: 4 },
+  metricValue: { fontSize: 24, fontWeight: 800 },
+  metricLabel: { fontSize: 12, fontWeight: 700, color: '#64748b', textTransform: 'uppercase' },
+  metricSub: { fontSize: 11, color: '#94a3b8' },
+  grid: { display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 28 },
+  section: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '28px', marginBottom: 28, boxShadow: '0 1px 3px rgba(0,0,0,0.02)' },
+  sectionTitle: { fontSize: 20, fontWeight: 800, color: '#0f172a', margin: 0 },
+  sectionDesc: { fontSize: 14, color: '#64748b', marginTop: 6 },
+  pill: { fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 20 },
+  timelineList: { display: 'flex', flexDirection: 'column', gap: 0 },
+  timelineItem: { display: 'flex', gap: 20 },
+  timeLineCol: { display: 'flex', flexDirection: 'column', alignItems: 'center', width: 45 },
+  timeLabel: { fontSize: 12, fontWeight: 700, color: '#94a3b8', height: 20, display: 'flex', alignItems: 'center' },
+  lineConnector: { width: 2, flex: 1, background: '#e2e8f0', margin: '4px 0' },
+  actionCard: { flex: 1, background: '#fff', border: '1px solid #f1f5f9', borderRadius: 12, padding: '14px 16px', marginBottom: 20, boxShadow: '0 2px 4px rgba(0,0,0,0.02)' },
+  actionHeader: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 },
+  actionLabel: { fontWeight: 700, fontSize: 14, color: '#1e293b' },
+  actionDuration: { fontSize: 12, color: '#94a3b8' },
+  actionContent: { display: 'flex', gap: 12, fontSize: 12, color: '#475569', fontWeight: 500 },
+  sectionSticker: { background: '#fff', border: '2px solid #2563eb', borderRadius: 16, padding: '24px', marginBottom: 28 },
+  stickerContent: { marginTop: 16, borderRadius: 8, overflow: 'hidden', border: '1px solid #94a3b8' },
+  productList: { display: 'flex', flexDirection: 'column', gap: 12 },
+  productCard: { border: '1px solid #f1f5f9', borderRadius: 12, padding: '16px', background: '#f8fafc' },
+  productTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
+  productName: { fontSize: 14, fontWeight: 700, color: '#1e293b', margin: 0 },
+  productType: { fontSize: 11, color: '#64748b', marginTop: 2 },
+  quantityGrid: { display: 'flex', alignItems: 'center', border: '1px solid #cbd5e1', borderRadius: 8, background: '#fff' },
+  qtyBtn: { padding: '4px 10px', border: 'none', background: 'none', cursor: 'pointer', fontWeight: 700 },
+  qtyVal: { width: 30, textAlign: 'center', fontWeight: 700, fontSize: 14 },
+  productUsage: { fontSize: 12, color: '#475569', padding: '8px 10px', background: '#fff', borderRadius: 6, margin: '8px 0' },
+  productFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
+  productPrice: { fontSize: 13, fontWeight: 800, color: '#16a34a' },
+  productLink: { fontSize: 12, fontWeight: 600, color: '#2563eb', textDecoration: 'none' },
+  tipList: { listStyle: 'none', padding: 0, margin: '16px 0 0 0', display: 'flex', flexDirection: 'column', gap: 12 },
+  tipBullet: { color: '#f97316', fontWeight: 700 },
+  tipItem: { fontSize: 13, color: '#475569', display: 'flex', gap: 10, lineHeight: 1.5 },
+  ctaBanner: { background: 'linear-gradient(135deg, #f97316, #ea580c)', borderRadius: 14, padding: '24px 28px', color: '#fff', marginTop: 28 },
+  ctaTitle: { margin: 0, fontSize: 20, fontWeight: 800 },
+  ctaDesc: { margin: '8px 0 20px 0', fontSize: 14, color: '#fed7aa' },
+  ctaBtn: { background: '#fff', color: '#ea580c', padding: '12px 24px', borderRadius: 8, textDecoration: 'none', fontWeight: 700, fontSize: 14, display: 'inline-block' },
+  disclaimer: { fontSize: 11, color: '#94a3b8', marginTop: 24, textAlign: 'center' }
 };
