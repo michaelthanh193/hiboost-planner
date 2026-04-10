@@ -107,9 +107,8 @@ function Header() {
   return (
     <header style={styles.header}>
       <div className="header-inner" style={styles.headerInnerBase}>
-        <div style={styles.logo}>
-          <span style={styles.logoIcon}>⚡</span>
-          <span style={styles.logoText}>HiBoost</span>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+          <img src="/logo.svg" alt="HiBoost" style={{ height: 32 }} />
           <span className="logo-sub" style={styles.logoSub}>Nutrition Planner</span>
         </div>
         <div style={styles.headerRight}>
