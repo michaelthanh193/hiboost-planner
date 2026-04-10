@@ -196,6 +196,13 @@ export const translations = {
     nf_protein:         'Protein',
     nf_caffeine:        'Caffeine',
 
+    // Cheat Sheet / Strategy Sticker
+    sticker_title:      'Strategy Sticker',
+    sticker_desc:       'Download a quick summary of your fuelling plan to stick on your top tube.',
+    sticker_time:       'TIME',
+    sticker_nutrition:  'NUTRITION',
+    sticker_finish:     'BIKE FINISH',
+
     // Tips keys from nutrition engine
     tip_female_fat_ox: 'Female athletes: oestrogen promotes fat oxidation — you may tolerate slightly lower carb intake than male athletes at same intensity.',
     tip_female_cycle: 'Hormonal cycle can affect heat tolerance and fluid retention. Track your training nutrition across your cycle.',
@@ -412,6 +419,13 @@ export const translations = {
     nf_sodium:          'Natri',
     nf_potassium:       'Kali',
     nf_caffeine:        'Caffeine',
+
+    // Cheat Sheet / Strategy Sticker
+    sticker_title:      'Strategy Sticker',
+    sticker_desc:       'Tải ảnh Tóm tắt nhanh Kế hoạch nạp để dán lên Ghi-đông (Top Tube) khi đi thi đấu.',
+    sticker_time:       'THỜI GIAN',
+    sticker_nutrition:  'DINH DƯỠNG',
+    sticker_finish:     'HOÀN THÀNH ĐẠP',
 
     // Tips keys from nutrition engine
     tip_female_fat_ox: 'VĐV Nữ: hormone oestrogen thúc đẩy quá trình đốt mỡ — bạn có thể dung nạp lượng carb thấp hơn một chút so với VĐV nam ở cùng cường độ.',

@@ -253,8 +253,8 @@ export default function Results({ plan, form, restart }) {
             <div style={{ ...styles.section, marginTop: 30 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <div>
-                  <h2 style={{ ...styles.sectionTitle, color: '#2563eb' }}>🚴‍♂️ Strategy Sticker</h2>
-                  <p style={styles.sectionDesc}>Tải ảnh Tóm tắt nhanh Kế hoạch nạp để dán lên Ghi-đông (Top Tube) khi đi thi đấu.</p>
+                  <h2 style={{ ...styles.sectionTitle, color: '#2563eb' }}>🚴‍♂️ {t('sticker_title')}</h2>
+                  <p style={styles.sectionDesc}>{t('sticker_desc')}</p>
                 </div>
                 <button 
                   onClick={downloadCheatSheet} 
@@ -284,8 +284,8 @@ export default function Results({ plan, form, restart }) {
                   <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #94a3b8' }}>
                     <thead>
                       <tr>
-                        <th style={{ border: '1px solid #94a3b8', padding: '4px', fontSize: 10, color: '#475569', textAlign: 'center', width: '35%' }}>TIME</th>
-                        <th style={{ border: '1px solid #94a3b8', padding: '4px', fontSize: 10, color: '#475569', textAlign: 'center', width: '65%' }}>NUTRITION</th>
+                        <th style={{ border: '1px solid #94a3b8', padding: '4px', fontSize: 10, color: '#475569', textAlign: 'center', width: '35%' }}>{t('sticker_time')}</th>
+                        <th style={{ border: '1px solid #94a3b8', padding: '4px', fontSize: 10, color: '#475569', textAlign: 'center', width: '65%' }}>{t('sticker_nutrition')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -337,7 +337,7 @@ export default function Results({ plan, form, restart }) {
                       })}
                       <tr>
                         <td colSpan={2} style={{ background: '#f43f5e', color: '#fff', fontSize: 12, fontWeight: 'bold', textAlign: 'center', padding: '6px' }}>
-                          FINISH ({fmtHrs(segmentBreakdown?.bike?.durationHrs ?? form.durationHrs)})
+                          {t('sticker_finish')} ({fmtHrs(segmentBreakdown?.bike?.durationHrs ?? form.durationHrs)})
                         </td>
                       </tr>
                     </tbody>
